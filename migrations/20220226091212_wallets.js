@@ -3,12 +3,12 @@
  * @returns { Promise<void> }
  */
 exports.up = function (knex) {
-  return knex.schema.createTable("users", function (table) {
+  return knex.schema.createTable("wallets", function (table) {
     table.increments("id").primary();
-    table.string("first_name").notNullable();
-    table.string("last_name").notNullable();
-    table.string("email").unique().notNullable();
-    table.string("password").notNullable();
+    table.integer("user_id").notNullable();
+    table.string("wallet_code").notNullable();
+    table.string("wallet_pin").defaultTo(null);
+    table.decimal("balance", 12, 2).defaultTo(0);
     table.timestamps(true, true);
   });
 };
@@ -18,5 +18,5 @@ exports.up = function (knex) {
  * @returns { Promise<void> }
  */
 exports.down = function (knex) {
-  return knex.schema.dropTable("users");
+  return knex.schema.dropTable("wallets");
 };

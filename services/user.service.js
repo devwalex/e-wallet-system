@@ -19,6 +19,12 @@ const createUser = async(userData) => {
     return user
 }
 
+/**
+ * Find User By Email
+ * @param {String} email
+ * @returns {Promise<User>}
+ */
+
 const findUserByEmail = async(email) => {
     const user = await db.select('*').from('users').where('email', email).first()
     console.log('user', user);

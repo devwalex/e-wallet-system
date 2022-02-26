@@ -1,4 +1,4 @@
-const { userService } = require("../services");
+const { userService, walletService } = require("../services");
 const httpStatus = require("http-status");
 const { validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
@@ -14,7 +14,13 @@ const register = async (req, res) => {
         .json({ errors: errors.array() });
     }
     const user = await userService.createUser(req.body);
-    return res.status(httpStatus.CREATED).send(user);
+
+    await walletService.createWallet(user[0]);
+
+    return res.status(httpStatus.CREATED).send({
+      success: true,
+      message: "Registered successfully!",
+    });
   } catch (error) {
     console.error("Register Error ==>", error);
     return res.status(httpStatus.INTERNAL_SERVER_ERROR).send(error);
@@ -34,7 +40,7 @@ const login = async (req, res) => {
     if (!user) {
       return res
         .status(httpStatus.UNAUTHORIZED)
-        .send({ message: "Invalid email or password" });
+        .send({ message: "Invalid email or password", success: false });
     }
 
     const match = await bcrypt.compare(password, user.password);
@@ -42,7 +48,7 @@ const login = async (req, res) => {
     if (!match) {
       return res
         .status(httpStatus.UNAUTHORIZED)
-        .send({ message: "Invalid email or password" });
+        .send({ message: "Invalid email or password", success: false });
     }
 
     const payload = {
@@ -57,6 +63,7 @@ const login = async (req, res) => {
     });
 
     return res.status(httpStatus.OK).send({
+      success: true,
       message: "Logged in successfully!",
       results: payload,
       token,
