@@ -138,7 +138,9 @@ const transferFund = async (walletData) => {
       .where("wallet_code", walletCodeOrEmail)
       .first();
 
-    recipient = await db("users").where("id", recipientWallet.user_id || null).first();
+    const recipientID = recipientWallet?.user_id || null
+
+    recipient = await db("users").where("id", recipientID).first();
   }
 
   if (!recipient) {
