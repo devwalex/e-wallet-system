@@ -61,10 +61,9 @@ const fundWallet = async (walletData) => {
   const user = walletData.user;
   const amount = walletData.amount;
 
-  const appUrl =
-    process.env.HOST && process.env.PORT
-      ? `http://${process.env.HOST}:${process.env.PORT}`
-      : "http://localhost:3000";
+  const appUrl = process.env.APP_URL
+    ? process.env.APP_URL
+    : "http://localhost:3000";
 
   const paymentLink = await makePayment(
     amount,
@@ -139,7 +138,7 @@ const transferFund = async (walletData) => {
       .where("wallet_code", walletCodeOrEmail)
       .first();
 
-    const recipientID = recipientWallet?.user_id || null
+    const recipientID = recipientWallet?.user_id || null;
 
     recipient = await db("users").where("id", recipientID).first();
   }
@@ -158,9 +157,7 @@ const transferFund = async (walletData) => {
     });
   }
 
-  const senderWallet = await db("wallets")
-    .where("user_id", sender.id)
-    .first();
+  const senderWallet = await db("wallets").where("user_id", sender.id).first();
 
   if (senderWallet.balance < amount) {
     return Promise.reject({ message: "Insufficient Fund", success: false });
@@ -231,30 +228,30 @@ const withdrawFund = async (walletData) => {
   const amount = walletData.amount;
   const walletPin = walletData.wallet_pin;
 
-  const userWallet = await db("wallets")
-    .where("user_id", user.id)
-    .first();
+  const userWallet = await db("wallets").where("user_id", user.id).first();
 
   if (userWallet.balance < amount) {
     return Promise.reject({ message: "Insufficient Fund", success: false });
   }
 
-    // Check if wallet pin is correct
-    const match = await bcrypt.compare(walletPin, userWallet.wallet_pin);
+  // Check if wallet pin is correct
+  const match = await bcrypt.compare(walletPin, userWallet.wallet_pin);
 
-    if (!match) {
-      return Promise.reject({
-        message: "Incorrect Pin",
-        success: false,
-      });
-    }
+  if (!match) {
+    return Promise.reject({
+      message: "Incorrect Pin",
+      success: false,
+    });
+  }
 
   const payment = await withdrawPayment(amount, bankCode, accountNumber);
 
-  const amountToDeduct = payment.amount + payment.fee
+  const amountToDeduct = payment.amount + payment.fee;
 
   // Deduct from user wallet
-  await db("wallets").where("user_id", user.id).decrement("balance", amountToDeduct);
+  await db("wallets")
+    .where("user_id", user.id)
+    .decrement("balance", amountToDeduct);
 
   await db("transactions").insert({
     user_id: user.id,
@@ -262,8 +259,8 @@ const withdrawFund = async (walletData) => {
     transaction_reference: payment.reference,
     amount: amountToDeduct,
     description: "Fund Withdrawal",
-    status: 'successful',
-    payment_method: 'bank transfer',
+    status: "successful",
+    payment_method: "bank transfer",
     is_inflow: false,
   });
 };
@@ -274,5 +271,5 @@ module.exports = {
   fundWallet,
   verifyWalletFunding,
   transferFund,
-  withdrawFund
+  withdrawFund,
 };
