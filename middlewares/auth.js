@@ -12,7 +12,6 @@ const auth = async (req, res, next) => {
           });
         }
         const decodeToken = await jwt.verify(token.split(' ')[1], jwtConfig.appKey)
-        console.log("decodeToken", decodeToken);
         req.user = decodeToken
         next();
     } catch (error) {

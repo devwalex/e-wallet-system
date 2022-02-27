@@ -130,8 +130,6 @@ const transferFund = async (walletData) => {
   const walletCodeOrEmail = walletData.wallet_code_or_email;
   const amount = walletData.amount;
 
-  const paymentLink = await withdrawFund(amount, "044", "0690000032");
-
   let recipient;
   if (walletCodeOrEmail.includes("@")) {
     recipient = await db("users").where("email", walletCodeOrEmail).first();

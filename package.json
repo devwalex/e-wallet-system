@@ -4,7 +4,10 @@
   "description": "This system allow users to fund their account, transfer funds and withdraw from their account.",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "migrate": "knex migrate:latest",
+    "migrate:reset": "knex migrate:rollback && npm run migrate",
+    "test": "cross-env NODE_ENV=test jest --testTimeout=10000 --runInBand --detectOpenHandles --forceExit",
+    "pretest": "cross-env NODE_ENV=test npm run migrate:reset"
   },
   "repository": {
     "type": "git",
@@ -36,6 +39,16 @@
     "xss-clean": "^0.1.1"
   },
   "devDependencies": {
-    "nodemon": "^2.0.15"
+    "axios-mock-adapter": "^1.20.0",
+    "cross-env": "^7.0.3",
+    "jest": "^27.5.1",
+    "nodemon": "^2.0.15",
+    "supertest": "^6.2.2"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "coveragePathIgnorePatterns": [
+      "/node_modules/"
+    ]
   }
 }

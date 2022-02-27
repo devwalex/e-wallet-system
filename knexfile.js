@@ -22,10 +22,10 @@ module.exports = {
     }
   },
 
-  staging: {
+  test: {
     client: 'mysql',
     connection: {
-      database: 'e_wallet_system',
+      database: 'e_wallet_system_test',
       user:     'root',
       password: 'root',
       port: 8889

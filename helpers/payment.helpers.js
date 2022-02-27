@@ -24,8 +24,6 @@ const makePayment = async (
       charset: "alphanumeric",
       capitalization: "uppercase",
     });
-
-    console.log("redirect_url>>>>>", redirect_url);
     const paymentLink = await axios({
       method: "post",
       url: "https://api.flutterwave.com/v3/payments",
