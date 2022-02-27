@@ -41,11 +41,15 @@ module.exports = {
 
   production: {
     client: 'mysql',
+    // connection: {
+    //   database: 'e_wallet_system',
+    //   user:     'root',
+    //   password: 'root',
+    //   port: 8889
+    // },
     connection: {
-      database: 'e_wallet_system',
-      user:     'root',
-      password: 'root',
-      port: 8889
+      connectionString: process.env.CLEARDB_DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
     },
     pool: {
       min: 2,
