@@ -1,5 +1,8 @@
 // Update with your config settings.
 
+const Url = require('url-parse');
+const CLEARDB_DATABASE_URL = new Url(process.env.CLEARDB_DATABASE_URL);
+
 /**
  * @type { Object.<string, import("knex").Knex.Config> }
  */
@@ -41,15 +44,11 @@ module.exports = {
 
   production: {
     client: 'mysql',
-    // connection: {
-    //   database: 'e_wallet_system',
-    //   user:     'root',
-    //   password: 'root',
-    //   port: 8889
-    // },
     connection: {
-      connectionString: process.env.CLEARDB_DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
+      database: CLEARDB_DATABASE_URL.pathname.substring(1),
+      user:  CLEARDB_DATABASE_URL.username,
+      password: CLEARDB_DATABASE_URL.password,
+      port: CLEARDB_DATABASE_URL.host,
     },
     pool: {
       min: 2,
