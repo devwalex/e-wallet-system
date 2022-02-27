@@ -1,5 +1,5 @@
 // Update with your config settings.
-
+require('dotenv/config');
 const Url = require('url-parse');
 const CLEARDB_DATABASE_URL = new Url(process.env.CLEARDB_DATABASE_URL);
 
@@ -11,10 +11,10 @@ module.exports = {
   development: {
     client: 'mysql',
     connection: {
-      database: 'e_wallet_system',
-      user:     'root',
-      password: 'root',
-      port: 8889
+      database: process.env.DB_NAME,
+      user:     process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      port: process.env.DB_PORT
     },
     pool: {
       min: 2,
@@ -28,10 +28,10 @@ module.exports = {
   test: {
     client: 'mysql',
     connection: {
-      database: 'e_wallet_system_test',
-      user:     'root',
-      password: 'root',
-      port: 8889
+      database: process.env.TEST_DB_NAME,
+      user:     process.env.TEST_DB_USER,
+      password: process.env.TEST_DB_PASSWORD,
+      port: process.env.TEST_DB_PORT
     },
     pool: {
       min: 2,
