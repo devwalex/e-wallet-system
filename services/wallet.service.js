@@ -134,11 +134,11 @@ const transferFund = async (walletData) => {
   if (walletCodeOrEmail.includes("@")) {
     recipient = await db("users").where("email", walletCodeOrEmail).first();
   } else {
-    const recipientID = await db("wallets")
+    const recipientWallet = await db("wallets")
       .where("wallet_code", walletCodeOrEmail)
-      .pluck("user_id");
+      .first();
 
-    recipient = await db("users").where("id", recipientID).first();
+    recipient = await db("users").where("id", recipientWallet.user_id).first();
   }
 
   if (!recipient) {
@@ -155,11 +155,11 @@ const transferFund = async (walletData) => {
     });
   }
 
-  const senderWalletBalance = await db("wallets")
+  const senderWallet = await db("wallets")
     .where("user_id", sender.id)
-    .pluck("balance");
+    .first();
 
-  if (senderWalletBalance < amount) {
+  if (senderWallet.balance < amount) {
     return Promise.reject({ message: "Insufficient Fund", success: false });
   }
 
@@ -217,11 +217,11 @@ const withdrawFund = async (walletData) => {
   const accountNumber = walletData.account_number;
   const amount = walletData.amount;
 
-  const userWalletBalance = await db("wallets")
+  const userWallet = await db("wallets")
     .where("user_id", user.id)
-    .pluck("balance");
+    .first();
 
-  if (userWalletBalance < amount) {
+  if (userWallet.balance < amount) {
     return Promise.reject({ message: "Insufficient Fund", success: false });
   }
 
