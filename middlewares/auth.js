@@ -7,6 +7,7 @@ const auth = async (req, res, next) => {
         let token = req.headers["authorization"];
         if (!token) {
           return res.status(httpStatus.UNAUTHORIZED).send({
+            success: false,
             message: "This resources requires authorization",
           });
         }
