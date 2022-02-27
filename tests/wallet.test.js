@@ -165,6 +165,7 @@ describe("Wallet", () => {
       .send({
         amount: 100,
         wallet_code_or_email: "mary@gmail.com",
+        wallet_pin: "1111"
       });
 
     expect(response.statusCode).toEqual(201);
@@ -179,6 +180,7 @@ describe("Wallet", () => {
         amount: 400,
         bank_code: "044",
         account_number: "0690000040",
+        wallet_pin: "1111"
       });
 
     expect(response.statusCode).toEqual(201);

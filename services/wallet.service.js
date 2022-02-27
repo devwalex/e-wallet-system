@@ -129,6 +129,7 @@ const transferFund = async (walletData) => {
   const sender = walletData.user;
   const walletCodeOrEmail = walletData.wallet_code_or_email;
   const amount = walletData.amount;
+  const walletPin = walletData.wallet_pin;
 
   let recipient;
   if (walletCodeOrEmail.includes("@")) {
@@ -163,6 +164,16 @@ const transferFund = async (walletData) => {
 
   if (senderWallet.balance < amount) {
     return Promise.reject({ message: "Insufficient Fund", success: false });
+  }
+
+  // Check if wallet pin is correct
+  const match = await bcrypt.compare(walletPin, senderWallet.wallet_pin);
+
+  if (!match) {
+    return Promise.reject({
+      message: "Incorrect Pin",
+      success: false,
+    });
   }
 
   const generatedTransactionReference = randomstring.generate({
@@ -218,6 +229,7 @@ const withdrawFund = async (walletData) => {
   const bankCode = walletData.bank_code;
   const accountNumber = walletData.account_number;
   const amount = walletData.amount;
+  const walletPin = walletData.wallet_pin;
 
   const userWallet = await db("wallets")
     .where("user_id", user.id)
@@ -226,6 +238,16 @@ const withdrawFund = async (walletData) => {
   if (userWallet.balance < amount) {
     return Promise.reject({ message: "Insufficient Fund", success: false });
   }
+
+    // Check if wallet pin is correct
+    const match = await bcrypt.compare(walletPin, userWallet.wallet_pin);
+
+    if (!match) {
+      return Promise.reject({
+        message: "Incorrect Pin",
+        success: false,
+      });
+    }
 
   const payment = await withdrawPayment(amount, bankCode, accountNumber);
 

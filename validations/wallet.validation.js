@@ -40,6 +40,9 @@ const transferFund = [
     .withMessage("amount must be a currency"),
     check("wallet_code_or_email", "Please provide either recipient wallet code or email")
     .not()
+    .isEmpty(),
+    check("wallet_pin", "Wallet pin is required")
+    .not()
     .isEmpty()
 ];
 
@@ -59,6 +62,9 @@ const withdrawFund = [
     .isEmpty()
     .isLength({ min: 10, max: 10 })
     .withMessage("Account number contain only 10 numbers"),
+    check("wallet_pin", "Wallet pin is required")
+    .not()
+    .isEmpty()
 ];
 
 module.exports = {

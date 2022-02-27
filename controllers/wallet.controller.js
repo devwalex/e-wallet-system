@@ -97,11 +97,12 @@ const transferFund = async (req, res) => {
         .status(httpStatus.BAD_REQUEST)
         .json({ errors: errors.array() });
     }
-    const { amount, wallet_code_or_email } = req.body;
+    const { amount, wallet_code_or_email, wallet_pin } = req.body;
 
     const walletData = {
       amount,
       wallet_code_or_email,
+      wallet_pin,
       user: req.user
     }
 
@@ -125,12 +126,13 @@ const withdrawFund = async (req, res) => {
         .status(httpStatus.BAD_REQUEST)
         .json({ errors: errors.array() });
     }
-    const { amount, bank_code, account_number } = req.body;
+    const { amount, bank_code, account_number, wallet_pin } = req.body;
 
     const walletData = {
       amount,
       bank_code,
       account_number,
+      wallet_pin,
       user: req.user
     }
 
