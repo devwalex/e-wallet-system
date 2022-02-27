@@ -45,7 +45,7 @@ module.exports = {
   production: {
     client: 'mysql',
     connection: {
-      database: CLEARDB_DATABASE_URL.pathname.substring(1),
+      database: CLEARDB_DATABASE_URL.pathname.substr(1),
       user:  CLEARDB_DATABASE_URL.username,
       password: CLEARDB_DATABASE_URL.password,
       port: CLEARDB_DATABASE_URL.host,
