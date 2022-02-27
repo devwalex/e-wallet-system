@@ -6,6 +6,6 @@ echo "Running Migrations"
 ENV_SILENT=true npm run migrate
 
 echo "Refreshing Migrations"
-ENV_SILENT=true npm run migrate:reset
+#ENV_SILENT=true npm run migrate:reset
 
 echo "Done"
