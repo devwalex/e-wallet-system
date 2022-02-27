@@ -32,7 +32,38 @@ const fundWallet = [
     .withMessage("amount must be a currency"),
 ];
 
+const transferFund = [
+  check("amount", "Amount is required")
+    .not()
+    .isEmpty()
+    .isCurrency()
+    .withMessage("amount must be a currency"),
+    check("wallet_code_or_email", "Please provide either recipient wallet code or email")
+    .not()
+    .isEmpty()
+];
+
+const withdrawFund = [
+  check("amount", "Amount is required")
+    .not()
+    .isEmpty()
+    .isCurrency()
+    .withMessage("amount must be a currency"),
+    check("bank_code", "Bank code is required")
+    .not()
+    .isEmpty()
+    .isLength({ min: 3, max: 3 })
+    .withMessage("Bank code contain only 3 numbers"),
+    check("account_number", "Bank code is required")
+    .not()
+    .isEmpty()
+    .isLength({ min: 10, max: 10 })
+    .withMessage("Account number contain only 10 numbers"),
+];
+
 module.exports = {
   setWalletPin,
-  fundWallet
+  fundWallet,
+  transferFund,
+  withdrawFund
 };

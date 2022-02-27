@@ -1,6 +1,6 @@
-require('dotenv/config');
+require("dotenv/config");
 const randomstring = require("randomstring");
-const FlutterwaveKey = process.env.FLUTTERWAVE_KEY
+const FlutterwaveKey = process.env.FLUTTERWAVE_KEY;
 const axios = require("axios");
 
 /**
@@ -25,7 +25,7 @@ const makePayment = async (
       capitalization: "uppercase",
     });
 
-    console.log('redirect_url>>>>>', redirect_url);
+    console.log("redirect_url>>>>>", redirect_url);
     const paymentLink = await axios({
       method: "post",
       url: "https://api.flutterwave.com/v3/payments",
@@ -79,6 +79,74 @@ const verifyPayment = async (transactionId) => {
     console.error("VerifyPayment Error>>", error.message);
     throw new Error(error);
   }
-}
+};
 
-module.exports = { makePayment, verifyPayment };
+/**
+ * Verify Payment with flutterwave
+ *
+ * @param {Integer} transactionId
+ * @returns {Object}
+ */
+
+const withdrawPayment = async (amount, bank_code, account_number) => {
+  try {
+    /**
+     * NOTE:
+     * Withdraw Fund does work because: Compliance approval required to use this feature
+     */
+
+    // const generatedTransactionReference = randomstring.generate({
+    //   length: 10,
+    //   charset: "alphanumeric",
+    //   capitalization: "uppercase",
+    // });
+
+    // const payment = await axios({
+    //   method: "post",
+    //   url: `https://api.flutterwave.com/v3/transfers`,
+    //   data: {
+    //     account_bank: bank_code,
+    //     account_number: account_number,
+    //     amount: amount,
+    //     narration: "Payment for things",
+    //     currency: "NGN",
+    //     reference: `dfs23fhr7ntg0293039_PMCK`,
+    //     debit_currency: "NGN"
+    //   },
+    //   headers: {
+    //     Authorization: `Bearer ${FlutterwaveKey}`,
+    //     Accept: "application/json",
+    //   },
+    // });
+    
+    const mockWithdrawFundResponse = {
+      status: "success",
+      message: "Transfer Queued Successfully",
+      data: {
+        id: 190626,
+        account_number: "0690000040",
+        bank_code: "044",
+        full_name: "Alexis Sanchez",
+        created_at: "2021-04-26T11:19:55.000Z",
+        currency: "NGN",
+        debit_currency: "NGN",
+        amount: 200,
+        fee: 10.75,
+        status: "NEW",
+        reference: "jh678b3kol1Z",
+        meta: null,
+        narration: "Payment for things",
+        complete_message: "",
+        requires_approval: 0,
+        is_approved: 1,
+        bank_name: "ACCESS BANK NIGERIA",
+      },
+    };
+    return mockWithdrawFundResponse.data;
+  } catch (error) {
+    console.error("withdrawPayment Error>>", error);
+    throw new Error(error);
+  }
+};
+
+module.exports = { makePayment, verifyPayment, withdrawPayment };

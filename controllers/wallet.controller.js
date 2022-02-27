@@ -61,13 +61,6 @@ const fundWallet = async (req, res) => {
 
 const verifyWalletFunding = async (req, res) => {
   try {
-    // const errors = validationResult(req);
-    // if (!errors.isEmpty()) {
-    //   return res
-    //     .status(httpStatus.BAD_REQUEST)
-    //     .json({ errors: errors.array() });
-    // }
-
     const { transaction_id, status, tx_ref } = req.query;
 
     if (!transaction_id || !status || !tx_ref) {
@@ -84,12 +77,11 @@ const verifyWalletFunding = async (req, res) => {
       user: req.user
     }
 
-    const payment = await walletService.verifyWalletFunding(walletData);
+    await walletService.verifyWalletFunding(walletData);
 
     return res.status(httpStatus.CREATED).send({
       success: true,
       message: "Wallet Funded Successfully",
-      payment
     });
   } catch (error) {
     console.error("verifyWalletFunding Error ==>", error);
@@ -97,8 +89,67 @@ const verifyWalletFunding = async (req, res) => {
   }
 };
 
+const transferFund = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res
+        .status(httpStatus.BAD_REQUEST)
+        .json({ errors: errors.array() });
+    }
+    const { amount, wallet_code_or_email } = req.body;
+
+    const walletData = {
+      amount,
+      wallet_code_or_email,
+      user: req.user
+    }
+
+    await walletService.transferFund(walletData);
+
+    return res.status(httpStatus.CREATED).send({
+      success: true,
+      message: "Fund Transfer Successful",
+    });
+  } catch (error) {
+    console.error("transferFund Error ==>", error);
+    return res.status(httpStatus.INTERNAL_SERVER_ERROR).send(error);
+  }
+};
+
+const withdrawFund = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res
+        .status(httpStatus.BAD_REQUEST)
+        .json({ errors: errors.array() });
+    }
+    const { amount, bank_code, account_number } = req.body;
+
+    const walletData = {
+      amount,
+      bank_code,
+      account_number,
+      user: req.user
+    }
+
+    await walletService.withdrawFund(walletData);
+
+    return res.status(httpStatus.CREATED).send({
+      success: true,
+      message: "Withdrawal Successful",
+    });
+  } catch (error) {
+    console.error("withdrawFund Error ==>", error);
+    return res.status(httpStatus.INTERNAL_SERVER_ERROR).send(error);
+  }
+};
+
 module.exports = {
   setWalletPin,
   fundWallet,
-  verifyWalletFunding
+  verifyWalletFunding,
+  transferFund,
+  withdrawFund
 };
