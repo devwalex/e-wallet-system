@@ -50,7 +50,7 @@ npm run migrate
 ```
 2. To reset migrations
 ```
-npm run migrate
+npm run migrate:reset
 ```
 
 # How to run
