@@ -265,6 +265,19 @@ const withdrawFund = async (walletData) => {
   });
 };
 
+/**
+ * Get Wallet Balance
+ * @param {Object} walletData
+ * @returns {Promise<Wallet>}
+ */
+
+ const getWalletBalance = async (walletData) => {
+  const user = walletData.user;
+  const wallet = await db("wallets").where("user_id", user.id).first();
+
+  return wallet;
+};
+
 module.exports = {
   createWallet,
   setWalletPin,
@@ -272,4 +285,5 @@ module.exports = {
   verifyWalletFunding,
   transferFund,
   withdrawFund,
+  getWalletBalance
 };

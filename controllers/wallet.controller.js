@@ -148,10 +148,30 @@ const withdrawFund = async (req, res) => {
   }
 };
 
+const getWalletBalance = async (req, res) => {
+  try {
+    const walletData = {
+      user: req.user
+    }
+    
+    const wallet = await walletService.getWalletBalance(walletData);
+
+    return res.status(httpStatus.OK).send({
+      success: true,
+      message: "Returned wallet balance successfully",
+      result: wallet.balance
+    });
+  } catch (error) {
+    console.error("GetWalletBalance Error ==>", error);
+    return res.status(httpStatus.INTERNAL_SERVER_ERROR).send(error);
+  }
+};
+
 module.exports = {
   setWalletPin,
   fundWallet,
   verifyWalletFunding,
   transferFund,
-  withdrawFund
+  withdrawFund,
+  getWalletBalance
 };
