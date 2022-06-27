@@ -74,7 +74,23 @@ const login = async (req, res) => {
   }
 };
 
+const getProfile = async (req, res) => {
+  try {
+    const user = await userService.getProfile(req.user);
+
+    return res.status(httpStatus.OK).send({
+      success: true,
+      message: "Returned profile successfully",
+      result: user,
+    });
+  } catch (error) {
+    console.error("Get Profile Error ==>", error);
+    return res.status(httpStatus.INTERNAL_SERVER_ERROR).send(error);
+  }
+};
+
 module.exports = {
   register,
   login,
+  getProfile,
 };

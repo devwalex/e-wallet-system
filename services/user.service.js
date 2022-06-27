@@ -28,9 +28,21 @@ const findUserByEmail = async(email) => {
     return user
 }
 
+/**
+ * Get Profile
+ * @param {Object} userData
+ * @returns {Promise<User>}
+ */
+
+ const getProfile = async(userData) => {
+    const user = await findUserByEmail(userData.email)
+    delete user.password
+    return user
+}
 
 
 module.exports = {
     createUser,
-    findUserByEmail
+    findUserByEmail,
+    getProfile
   };
