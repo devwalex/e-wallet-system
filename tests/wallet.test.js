@@ -192,12 +192,21 @@ describe("Wallet", () => {
       .post("/wallet/withdraw")
       .set({ Authorization: `Bearer ${token}` })
       .send({
-        amount: '',
+        amount: "",
         bank_code: "",
         account_number: "",
       });
 
       expect(response.statusCode).toEqual(400);
       expect(response.body).toHaveProperty('errors')
+  });
+
+  it("should get wallet balance successfully", async () => {
+    const response = await request(app)
+      .get("/wallet/balance")
+      .set({ Authorization: `Bearer ${token}` })
+      .send();
+    expect(response.statusCode).toEqual(200);
+    expect(response.body.message).toEqual("Returned wallet balance successfully");
   });
 });
