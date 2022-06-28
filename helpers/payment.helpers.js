@@ -80,9 +80,11 @@ const verifyPayment = async (transactionId) => {
 };
 
 /**
- * Verify Payment with flutterwave
+ * Widthraw Payment with flutterwave
  *
- * @param {Integer} transactionId
+ * @param {Integer} amount
+ * @param {String} bank_code
+ * @param {String} account_number
  * @returns {Object}
  */
 
@@ -116,6 +118,12 @@ const withdrawPayment = async (amount, bank_code, account_number) => {
     //     Accept: "application/json",
     //   },
     // });
+
+    const generatedTransactionReference = randomstring.generate({
+      length: 10,
+      charset: "alphanumeric",
+      capitalization: "uppercase",
+    });
     
     const mockWithdrawFundResponse = {
       status: "success",
@@ -128,10 +136,10 @@ const withdrawPayment = async (amount, bank_code, account_number) => {
         created_at: "2021-04-26T11:19:55.000Z",
         currency: "NGN",
         debit_currency: "NGN",
-        amount: 200,
+        amount: amount,
         fee: 10.75,
         status: "NEW",
-        reference: "jh678b3kol1Z",
+        reference: `PID-${generatedTransactionReference}`,
         meta: null,
         narration: "Payment for things",
         complete_message: "",
