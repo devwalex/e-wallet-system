@@ -167,7 +167,7 @@ const getWalletBalance = async (req, res) => {
   }
 };
 
-const getBanks = async (res) => {
+const getBanks = async (req, res) => {
   try {    
     const banks = walletService.getBanks();
 
