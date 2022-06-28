@@ -167,11 +167,27 @@ const getWalletBalance = async (req, res) => {
   }
 };
 
+const getBanks = async (res) => {
+  try {    
+    const banks = walletService.getBanks();
+
+    return res.status(httpStatus.OK).send({
+      success: true,
+      message: "Returned banks successfully",
+      result: banks
+    });
+  } catch (error) {
+    console.error("GetBanks Error ==>", error);
+    return res.status(httpStatus.INTERNAL_SERVER_ERROR).send(error);
+  }
+};
+
 module.exports = {
   setWalletPin,
   fundWallet,
   verifyWalletFunding,
   transferFund,
   withdrawFund,
-  getWalletBalance
+  getWalletBalance,
+  getBanks
 };

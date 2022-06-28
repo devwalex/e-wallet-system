@@ -12,5 +12,6 @@ router.get("/wallet/verify", [auth, setWalletPin], walletController.verifyWallet
 router.post("/wallet/transfer", [auth, setWalletPin, walletValidation.transferFund], walletController.transferFund);
 router.post("/wallet/withdraw", [auth, setWalletPin, walletValidation.withdrawFund], walletController.withdrawFund);
 router.get("/wallet/balance", [auth, setWalletPin], walletController.getWalletBalance);
+router.get("/wallet/banks", [auth, setWalletPin], walletController.getBanks);
 
 module.exports = router;

@@ -7,6 +7,7 @@ const {
   withdrawPayment,
 } = require("../helpers/payment.helpers");
 require("dotenv/config");
+const banks = require("../helpers/json/banks.json")
 
 /**
  * Create Wallet
@@ -278,6 +279,15 @@ const withdrawFund = async (walletData) => {
   return wallet;
 };
 
+/**
+ * Get Banks
+ * @returns {Array} banks - array of banks 
+ */
+
+const getBanks = () => {
+  return banks;
+};
+
 module.exports = {
   createWallet,
   setWalletPin,
@@ -285,5 +295,6 @@ module.exports = {
   verifyWalletFunding,
   transferFund,
   withdrawFund,
-  getWalletBalance
+  getWalletBalance,
+  getBanks
 };
