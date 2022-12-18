@@ -32,7 +32,7 @@ const fundWallet = [
     .withMessage("amount must be a currency"),
   check("frontend_base_url")
     .isURL()
-    .isEmpty()
+    .optional()
 ];
 
 const transferFund = [
