@@ -68,6 +68,8 @@ const fundWallet = async (walletData) => {
     appUrl = process.env.APP_URL
       ? process.env.APP_URL
       : "http://localhost:3000";
+  }else{
+    appUrl = frontendBaseUrl;
   }
 
   const paymentLink = await makePayment(
