@@ -30,6 +30,8 @@ const fundWallet = [
     .isEmpty()
     .isCurrency()
     .withMessage("amount must be a currency"),
+  check("frontend_base_url")
+    .isURL()
 ];
 
 const transferFund = [

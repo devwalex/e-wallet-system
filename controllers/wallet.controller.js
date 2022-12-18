@@ -39,11 +39,12 @@ const fundWallet = async (req, res) => {
         .json({ errors: errors.array() });
     }
 
-    const { amount } = req.body;
+    const { amount, frontend_base_url } = req.body;
 
     const walletData = {
       amount,
-      user: req.user
+      user: req.user,
+      frontend_base_url
     }
 
     const paymentLink = await walletService.fundWallet(walletData);

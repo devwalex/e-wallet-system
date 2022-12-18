@@ -61,10 +61,14 @@ const setWalletPin = async (walletData) => {
 const fundWallet = async (walletData) => {
   const user = walletData.user;
   const amount = walletData.amount;
+  const frontendBaseUrl = walletData.frontend_base_url;
 
-  const appUrl = process.env.APP_URL
-    ? process.env.APP_URL
-    : "http://localhost:3000";
+  let appUrl;
+  if (!frontendBaseUrl) {
+    appUrl = process.env.APP_URL
+      ? process.env.APP_URL
+      : "http://localhost:3000";
+  }
 
   const paymentLink = await makePayment(
     amount,
