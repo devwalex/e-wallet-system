@@ -8,7 +8,7 @@ const getTransactions = async (req, res) => {
         userId: req.user.id,
         limit: req.query.limit,
         page: req.query.page
-    }
+    };
     const transactions = await transactionService.getTransactions(transactionData);
 
     return res.status(httpStatus.OK).send({
