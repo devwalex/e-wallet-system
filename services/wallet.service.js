@@ -99,29 +99,30 @@ const verifyWalletFunding = async (walletData) => {
       message: "Could not verify payment",
     });
   }
+  await db.transaction(async trx => {
 
-  const transaction = await db("transactions")
-    .where("user_id", user.id)
-    .where("transaction_code", payment.id)
-    .first();
-
-  if (!transaction) {
-    await db("wallets")
+    const transaction = await trx("transactions")
       .where("user_id", user.id)
-      .increment("balance", payment.amount);
+      .where("transaction_code", payment.id)
+      .first();
 
-    await db("transactions").insert({
-      user_id: user.id,
-      transaction_code: payment.id,
-      transaction_reference: payment.tx_ref,
-      amount: payment.amount,
-      description: "Wallet Funding",
-      status: payment.status,
-      payment_method: payment.payment_type,
-      is_inflow: true,
-    });
-  }
+    if (!transaction) {
+      await trx("wallets")
+        .where("user_id", user.id)
+        .increment("balance", payment.amount);
 
+      await trx("transactions").insert({
+        user_id: user.id,
+        transaction_code: payment.id,
+        transaction_reference: payment.tx_ref,
+        amount: payment.amount,
+        description: "Wallet Funding",
+        status: payment.status,
+        payment_method: payment.payment_type,
+        is_inflow: true,
+      });
+    }
+  });
   return payment;
 };
 
@@ -166,6 +167,10 @@ const transferFund = async (walletData) => {
 
   const senderWallet = await db("wallets").where("user_id", sender.id).first();
 
+  if ( amount == 0) {
+    return Promise.reject({ message: "Invalid Amount", success: false });
+  }
+
   if (senderWallet.balance < amount) {
     return Promise.reject({ message: "Insufficient Fund", success: false });
   }
@@ -191,35 +196,39 @@ const transferFund = async (walletData) => {
     charset: "numeric",
   });
 
-  // Deduct from sender wallet
-  await db("wallets").where("user_id", sender.id).decrement("balance", amount);
+  await db.transaction(async trx => {
 
-  await db("transactions").insert({
-    user_id: sender.id,
-    transaction_code: generatedTransactionCode,
-    transaction_reference: `PID-${generatedTransactionReference}`,
-    amount: amount,
-    description: "Fund Transfer",
-    status: "successful",
-    payment_method: "wallet",
-    is_inflow: false,
-  });
+    // Deduct from sender wallet
+    await trx("wallets").where("user_id", sender.id).decrement("balance", amount);
+    // save the transaction
+    await trx("transactions").insert({
+      user_id: sender.id,
+      transaction_code: generatedTransactionCode,
+      transaction_reference: `PID-${generatedTransactionReference}`,
+      amount: amount,
+      description: "Fund Transfer",
+      status: "successful",
+      payment_method: "wallet",
+      is_inflow: false,
+    });
 
-  // Add to recipient wallet
-  await db("wallets")
-    .where("user_id", recipient.id)
-    .increment("balance", amount);
+    // Add to recipient wallet
+    await trx("wallets")
+      .where("user_id", recipient.id)
+      .increment("balance", amount);
+    // save the transaction
+    await trx("transactions").insert({
+      user_id: recipient.id,
+      transaction_code: generatedTransactionCode,
+      transaction_reference: `PID-${generatedTransactionReference}`,
+      amount: amount,
+      description: "Fund Transfer",
+      status: "successful",
+      payment_method: "wallet",
+      is_inflow: true,
+    });
+  })
 
-  await db("transactions").insert({
-    user_id: recipient.id,
-    transaction_code: generatedTransactionCode,
-    transaction_reference: `PID-${generatedTransactionReference}`,
-    amount: amount,
-    description: "Fund Transfer",
-    status: "successful",
-    payment_method: "wallet",
-    is_inflow: true,
-  });
 };
 
 /**
@@ -255,20 +264,23 @@ const withdrawFund = async (walletData) => {
 
   const amountToDeduct = payment.amount + payment.fee;
 
-  // Deduct from user wallet
-  await db("wallets")
-    .where("user_id", user.id)
-    .decrement("balance", amountToDeduct);
+  await db.transaction(async trx => {
 
-  await db("transactions").insert({
-    user_id: user.id,
-    transaction_code: payment.id,
-    transaction_reference: payment.reference,
-    amount: amountToDeduct,
-    description: "Fund Withdrawal",
-    status: "successful",
-    payment_method: "bank transfer",
-    is_inflow: false,
+    // Deduct from user wallet
+    await trx("wallets")
+      .where("user_id", user.id)
+      .decrement("balance", amountToDeduct);
+
+    await trx("transactions").insert({
+      user_id: user.id,
+      transaction_code: payment.id,
+      transaction_reference: payment.reference,
+      amount: amountToDeduct,
+      description: "Fund Withdrawal",
+      status: "successful",
+      payment_method: "bank transfer",
+      is_inflow: false,
+    });
   });
 };
 
