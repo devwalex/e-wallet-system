@@ -3,11 +3,13 @@ This system allow users to fund their account, transfer funds and withdraw from 
 
 # Features
 - Basic Authentication (Register & Login)
+- Get Profile
 - Set Wallet Pin
 - Fund Wallet
 - Verify Wallet Funding
 - Fund Transfer
 - Withdraw Fund
+- Get Transactions
 
 # API Documentation
 https://documenter.getpostman.com/view/5916628/UVkqrEs8
