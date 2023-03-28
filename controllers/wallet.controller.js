@@ -1,187 +1,143 @@
 const { walletService } = require("../services");
 const httpStatus = require("http-status");
 const { validationResult } = require("express-validator");
+const catchAsync = require("../utils/catchasync");
+const BadRequestError = require("../utils/errors/badrequest.error");
 
-const setWalletPin = async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res
-        .status(httpStatus.BAD_REQUEST)
-        .json({ errors: errors.array() });
-    }
-
-    const { pin } = req.body;
-
-    const walletData = {
-      pin,
-      user: req.user
-    }
-
-    await walletService.setWalletPin(walletData);
-
-    return res.status(httpStatus.CREATED).send({
-      success: true,
-      message: "Set pin successfully!",
-    });
-  } catch (error) {
-    console.error("SetWalletPin Error ==>", error);
-    return res.status(httpStatus.INTERNAL_SERVER_ERROR).send(error);
+const setWalletPin = catchAsync(async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(httpStatus.BAD_REQUEST).json({ errors: errors.array() });
   }
-};
 
-const fundWallet = async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res
-        .status(httpStatus.BAD_REQUEST)
-        .json({ errors: errors.array() });
-    }
+  const { pin } = req.body;
 
-    const { amount, frontend_base_url } = req.body;
+  const walletData = {
+    pin,
+    user: req.user,
+  };
 
-    const walletData = {
-      amount,
-      user: req.user,
-      frontend_base_url
-    }
+  await walletService.setWalletPin(walletData);
 
-    const paymentLink = await walletService.fundWallet(walletData);
+  return res.status(httpStatus.CREATED).send({
+    success: true,
+    message: "Set pin successfully!",
+  });
+});
 
-    return res.status(httpStatus.CREATED).send({
-      success: true,
-      message: "Initialized Wallet Funding",
-      paymentLink
-    });
-  } catch (error) {
-    console.error("fundWallet Error ==>", error);
-    return res.status(httpStatus.INTERNAL_SERVER_ERROR).send(error);
+const fundWallet = catchAsync(async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(httpStatus.BAD_REQUEST).json({ errors: errors.array() });
   }
-};
 
-const verifyWalletFunding = async (req, res) => {
-  try {
-    const { transaction_id, status, tx_ref } = req.query;
+  const { amount, frontend_base_url } = req.body;
 
-    if (!transaction_id || !status || !tx_ref) {
-      return res.status(httpStatus.BAD_REQUEST).send({
-        success: false,
-        message: "Could not verify payment",
-      });
-    }
+  const walletData = {
+    amount,
+    user: req.user,
+    frontend_base_url,
+  };
 
-    const walletData = {
-      transaction_id,
-      status,
-      tx_ref,
-      user: req.user
-    }
+  const paymentLink = walletService.fundWallet(walletData);
 
-    await walletService.verifyWalletFunding(walletData);
+  return res.status(httpStatus.CREATED).send({
+    success: true,
+    message: "Initialized Wallet Funding",
+    paymentLink,
+  });
+});
 
-    return res.status(httpStatus.CREATED).send({
-      success: true,
-      message: "Wallet Funded Successfully",
-    });
-  } catch (error) {
-    console.error("verifyWalletFunding Error ==>", error);
-    return res.status(httpStatus.INTERNAL_SERVER_ERROR).send(error);
+const verifyWalletFunding = catchAsync(async (req, res) => {
+  const { transaction_id, status, tx_ref } = req.query;
+
+  if (!transaction_id || !status || !tx_ref) {
+    throw new BadRequestError("Could not verify payment");
   }
-};
 
-const transferFund = async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res
-        .status(httpStatus.BAD_REQUEST)
-        .json({ errors: errors.array() });
-    }
-    const { amount, wallet_code_or_email, wallet_pin } = req.body;
+  const walletData = {
+    transaction_id,
+    status,
+    tx_ref,
+    user: req.user,
+  };
 
-    const walletData = {
-      amount,
-      wallet_code_or_email,
-      wallet_pin,
-      user: req.user
-    }
+  await walletService.verifyWalletFunding(walletData);
 
-    await walletService.transferFund(walletData);
+  return res.status(httpStatus.CREATED).send({
+    success: true,
+    message: "Wallet Funded Successfully",
+  });
+});
 
-    return res.status(httpStatus.CREATED).send({
-      success: true,
-      message: "Fund Transfer Successful",
-    });
-  } catch (error) {
-    console.error("transferFund Error ==>", error);
-    return res.status(httpStatus.INTERNAL_SERVER_ERROR).send(error);
+const transferFund = catchAsync(async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(httpStatus.BAD_REQUEST).json({ errors: errors.array() });
   }
-};
+  const { amount, wallet_code_or_email, wallet_pin } = req.body;
 
-const withdrawFund = async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res
-        .status(httpStatus.BAD_REQUEST)
-        .json({ errors: errors.array() });
-    }
-    const { amount, bank_code, account_number, wallet_pin } = req.body;
+  const walletData = {
+    amount,
+    wallet_code_or_email,
+    wallet_pin,
+    user: req.user,
+  };
 
-    const walletData = {
-      amount,
-      bank_code,
-      account_number,
-      wallet_pin,
-      user: req.user
-    }
+  await walletService.transferFund(walletData);
 
-    await walletService.withdrawFund(walletData);
+  return res.status(httpStatus.CREATED).send({
+    success: true,
+    message: "Fund Transfer Successful",
+  });
+});
 
-    return res.status(httpStatus.CREATED).send({
-      success: true,
-      message: "Withdrawal Successful",
-    });
-  } catch (error) {
-    console.error("withdrawFund Error ==>", error);
-    return res.status(httpStatus.INTERNAL_SERVER_ERROR).send(error);
+const withdrawFund = catchAsync(async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(httpStatus.BAD_REQUEST).json({ errors: errors.array() });
   }
-};
+  const { amount, bank_code, account_number, wallet_pin } = req.body;
 
-const getWalletBalance = async (req, res) => {
-  try {
-    const walletData = {
-      user: req.user
-    }
-    
-    const wallet = await walletService.getWalletBalance(walletData);
+  const walletData = {
+    amount,
+    bank_code,
+    account_number,
+    wallet_pin,
+    user: req.user,
+  };
 
-    return res.status(httpStatus.OK).send({
-      success: true,
-      message: "Returned wallet balance successfully",
-      result: wallet.balance
-    });
-  } catch (error) {
-    console.error("GetWalletBalance Error ==>", error);
-    return res.status(httpStatus.INTERNAL_SERVER_ERROR).send(error);
-  }
-};
+  await walletService.withdrawFund(walletData);
 
-const getBanks = async (req, res) => {
-  try {    
-    const banks = walletService.getBanks();
+  return res.status(httpStatus.CREATED).send({
+    success: true,
+    message: "Withdrawal Successful",
+  });
+});
 
-    return res.status(httpStatus.OK).send({
-      success: true,
-      message: "Returned banks successfully",
-      result: banks
-    });
-  } catch (error) {
-    console.error("GetBanks Error ==>", error);
-    return res.status(httpStatus.INTERNAL_SERVER_ERROR).send(error);
-  }
-};
+const getWalletBalance = catchAsync(async (req, res) => {
+  const walletData = {
+    user: req.user,
+  };
+
+  const wallet = await walletService.getWalletBalance(walletData);
+
+  return res.status(httpStatus.OK).send({
+    success: true,
+    message: "Returned wallet balance successfully",
+    result: wallet.balance,
+  });
+});
+
+const getBanks = catchAsync(async (req, res) => {
+  const banks = walletService.getBanks();
+
+  return res.status(httpStatus.OK).send({
+    success: true,
+    message: "Returned banks successfully",
+    result: banks,
+  });
+});
 
 module.exports = {
   setWalletPin,
@@ -190,5 +146,5 @@ module.exports = {
   transferFund,
   withdrawFund,
   getWalletBalance,
-  getBanks
+  getBanks,
 };

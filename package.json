@@ -7,7 +7,7 @@
     "start": "node server.js",
     "migrate": "knex migrate:latest",
     "migrate:reset": "knex migrate:rollback && npm run migrate",
-    "test": "cross-env NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js jest --testTimeout=10000 --runInBand --detectOpenHandles --forceExit",
+    "test": "cross-env NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js jest --coverage --testPathPattern=tests --testTimeout=10000 --runInBand --detectOpenHandles --forceExit",
     "pretest": "cross-env NODE_ENV=test npm run migrate:reset"
   },
   "repository": {

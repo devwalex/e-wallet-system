@@ -1,13 +1,11 @@
 const db = require("../config/db");
 const randomstring = require("randomstring");
 const bcrypt = require("bcryptjs");
-const {
-  makePayment,
-  verifyPayment,
-  withdrawPayment,
-} = require("../helpers/payment.helpers");
+const { makePayment, verifyPayment, withdrawPayment } = require("../helpers/payment.helpers");
 require("dotenv/config");
-const banks = require("../helpers/json/banks.json")
+const banks = require("../helpers/json/banks.json");
+const NotFoundError = require("../utils/errors/notfound.error");
+const BadRequestError = require("../utils/errors/badrequest.error");
 
 /**
  * Create Wallet
@@ -45,9 +43,7 @@ const setWalletPin = async (walletData) => {
 
   const wallet = await db("wallets").where("user_id", user.id).first();
   if (!wallet.wallet_pin) {
-    await db("wallets")
-      .where("user_id", user.id)
-      .update({ wallet_pin: hashPin });
+    await db("wallets").where("user_id", user.id).update({ wallet_pin: hashPin });
   }
   return wallet;
 };
@@ -65,21 +61,12 @@ const fundWallet = async (walletData) => {
 
   let appUrl;
   if (!frontendBaseUrl) {
-    appUrl = process.env.APP_URL
-      ? process.env.APP_URL
-      : "http://localhost:3000";
-  }else{
+    appUrl = process.env.APP_URL ? process.env.APP_URL : "http://localhost:3000";
+  } else {
     appUrl = frontendBaseUrl;
   }
 
-  const paymentLink = await makePayment(
-    amount,
-    user,
-    `${appUrl}/wallet/verify`,
-    "Wallet Funding"
-  );
-
-  return paymentLink;
+  return makePayment(amount, user, `${appUrl}/wallet/verify`, "Wallet Funding");
 };
 
 /**
@@ -99,17 +86,11 @@ const verifyWalletFunding = async (walletData) => {
       message: "Could not verify payment",
     });
   }
-  await db.transaction(async trx => {
-
-    const transaction = await trx("transactions")
-      .where("user_id", user.id)
-      .where("transaction_code", payment.id)
-      .first();
+  await db.transaction(async (trx) => {
+    const transaction = await trx("transactions").where("user_id", user.id).where("transaction_code", payment.id).first();
 
     if (!transaction) {
-      await trx("wallets")
-        .where("user_id", user.id)
-        .increment("balance", payment.amount);
+      await trx("wallets").where("user_id", user.id).increment("balance", payment.amount);
 
       await trx("transactions").insert({
         user_id: user.id,
@@ -142,9 +123,7 @@ const transferFund = async (walletData) => {
   if (walletCodeOrEmail.includes("@")) {
     recipient = await db("users").where("email", walletCodeOrEmail).first();
   } else {
-    const recipientWallet = await db("wallets")
-      .where("wallet_code", walletCodeOrEmail)
-      .first();
+    const recipientWallet = await db("wallets").where("wallet_code", walletCodeOrEmail).first();
 
     const recipientID = recipientWallet?.user_id || null;
 
@@ -152,37 +131,28 @@ const transferFund = async (walletData) => {
   }
 
   if (!recipient) {
-    return Promise.reject({
-      message: "Recipient not found",
-      success: false,
-    });
+    throw new NotFoundError("Recipient not found");
   }
 
   if (sender.id === recipient.id) {
-    return Promise.reject({
-      message: "You cannot transfer fund to yourself",
-      success: false,
-    });
+    throw new BadRequestError("You cannot transfer fund to yourself");
   }
 
   const senderWallet = await db("wallets").where("user_id", sender.id).first();
 
-  if ( amount == 0) {
-    return Promise.reject({ message: "Invalid Amount", success: false });
+  if (amount == 0) {
+    throw new BadRequestError("Invalid Amount");
   }
 
   if (senderWallet.balance < amount) {
-    return Promise.reject({ message: "Insufficient Fund", success: false });
+    throw new BadRequestError("Insufficient Fund");
   }
 
   // Check if wallet pin is correct
   const match = await bcrypt.compare(walletPin, senderWallet.wallet_pin);
 
   if (!match) {
-    return Promise.reject({
-      message: "Incorrect Pin",
-      success: false,
-    });
+    throw new BadRequestError("Incorrect Pin");
   }
 
   const generatedTransactionReference = randomstring.generate({
@@ -196,8 +166,7 @@ const transferFund = async (walletData) => {
     charset: "numeric",
   });
 
-  await db.transaction(async trx => {
-
+  await db.transaction(async (trx) => {
     // Deduct from sender wallet
     await trx("wallets").where("user_id", sender.id).decrement("balance", amount);
     // save the transaction
@@ -213,9 +182,7 @@ const transferFund = async (walletData) => {
     });
 
     // Add to recipient wallet
-    await trx("wallets")
-      .where("user_id", recipient.id)
-      .increment("balance", amount);
+    await trx("wallets").where("user_id", recipient.id).increment("balance", amount);
     // save the transaction
     await trx("transactions").insert({
       user_id: recipient.id,
@@ -227,8 +194,7 @@ const transferFund = async (walletData) => {
       payment_method: "wallet",
       is_inflow: true,
     });
-  })
-
+  });
 };
 
 /**
@@ -247,29 +213,23 @@ const withdrawFund = async (walletData) => {
   const userWallet = await db("wallets").where("user_id", user.id).first();
 
   if (userWallet.balance < amount) {
-    return Promise.reject({ message: "Insufficient Fund", success: false });
+    throw new BadRequestError("Insufficient Fund");
   }
 
   // Check if wallet pin is correct
   const match = await bcrypt.compare(walletPin, userWallet.wallet_pin);
 
   if (!match) {
-    return Promise.reject({
-      message: "Incorrect Pin",
-      success: false,
-    });
+    throw new BadRequestError("Incorrect Pin");
   }
 
   const payment = await withdrawPayment(amount, bankCode, accountNumber);
 
   const amountToDeduct = payment.amount + payment.fee;
 
-  await db.transaction(async trx => {
-
+  await db.transaction(async (trx) => {
     // Deduct from user wallet
-    await trx("wallets")
-      .where("user_id", user.id)
-      .decrement("balance", amountToDeduct);
+    await trx("wallets").where("user_id", user.id).decrement("balance", amountToDeduct);
 
     await trx("transactions").insert({
       user_id: user.id,
@@ -290,7 +250,7 @@ const withdrawFund = async (walletData) => {
  * @returns {Promise<Wallet>}
  */
 
- const getWalletBalance = async (walletData) => {
+const getWalletBalance = async (walletData) => {
   const user = walletData.user;
   const wallet = await db("wallets").where("user_id", user.id).first();
 
@@ -299,7 +259,7 @@ const withdrawFund = async (walletData) => {
 
 /**
  * Get Banks
- * @returns {Array} banks - array of banks 
+ * @returns {Array} banks - array of banks
  */
 
 const getBanks = () => {
@@ -314,5 +274,5 @@ module.exports = {
   transferFund,
   withdrawFund,
   getWalletBalance,
-  getBanks
+  getBanks,
 };
