@@ -12,12 +12,7 @@ const axios = require("axios");
  * @param {String} description
  * @returns {String}
  */
-const makePayment = async (
-  amount,
-  authenticatedUser,
-  redirect_url,
-  description
-) => {
+const makePayment = async (amount, authenticatedUser, redirect_url, description) => {
   try {
     const generatedTransactionReference = randomstring.generate({
       length: 10,
@@ -35,8 +30,7 @@ const makePayment = async (
         payment_options: "card",
         customer: {
           email: authenticatedUser.email,
-          name:
-            authenticatedUser.first_name + " " + authenticatedUser.last_name,
+          name: authenticatedUser.first_name + " " + authenticatedUser.last_name,
         },
         customizations: {
           title: "E-wallet",
@@ -95,36 +89,12 @@ const withdrawPayment = async (amount, bank_code, account_number) => {
      * Withdraw Fund does work because: Compliance approval required to use this feature
      */
 
-    // const generatedTransactionReference = randomstring.generate({
-    //   length: 10,
-    //   charset: "alphanumeric",
-    //   capitalization: "uppercase",
-    // });
-
-    // const payment = await axios({
-    //   method: "post",
-    //   url: `https://api.flutterwave.com/v3/transfers`,
-    //   data: {
-    //     account_bank: bank_code,
-    //     account_number: account_number,
-    //     amount: amount,
-    //     narration: "Payment for things",
-    //     currency: "NGN",
-    //     reference: `dfs23fhr7ntg0293039_PMCK`,
-    //     debit_currency: "NGN"
-    //   },
-    //   headers: {
-    //     Authorization: `Bearer ${FlutterwaveKey}`,
-    //     Accept: "application/json",
-    //   },
-    // });
-
     const generatedTransactionReference = randomstring.generate({
       length: 10,
       charset: "alphanumeric",
       capitalization: "uppercase",
     });
-    
+
     const mockWithdrawFundResponse = {
       status: "success",
       message: "Transfer Queued Successfully",
