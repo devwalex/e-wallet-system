@@ -1,5 +1,5 @@
 const request = require("supertest");
-const app = require("../server");
+const app = require("../app");
 
 let token;
 beforeAll(async () => {
@@ -38,17 +38,17 @@ describe("User", () => {
     });
 
     expect(response.statusCode).toEqual(400);
-    expect(response.body).toHaveProperty('errors')
+    expect(response.body).toHaveProperty("errors");
   });
 
   it("should login a user successfully", async () => {
     const response = await request(app).post("/login").send({
-      email: "john@gmail.com",
+      email: "carter@gmail.com",
       password: "123456",
     });
     expect(response.statusCode).toEqual(200);
     expect(response.body.message).toEqual("Logged in successfully!");
-    expect(response.body).toHaveProperty('token')
+    expect(response.body).toHaveProperty("token");
   });
 
   it("should throw validation error if required input are missing when login", async () => {
@@ -57,7 +57,7 @@ describe("User", () => {
       password: "",
     });
     expect(response.statusCode).toEqual(400);
-    expect(response.body).toHaveProperty('errors')
+    expect(response.body).toHaveProperty("errors");
   });
 
   it("should throw error if login details are not valid", async () => {
