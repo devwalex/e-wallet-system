@@ -7,7 +7,7 @@ const db = require('../config/db')
  */
 
 const getTransactions = async (transactionData) => {
-    const transactions = await db("transactions").where("user_id", transactionData.userId).paginate({ perPage: transactionData.limit, currentPage: transactionData.page, isLengthAware: true });
+    const transactions = await db("transactions").where("user_id", transactionData.userId).orderBy("id", "desc").paginate({ perPage: transactionData.limit, currentPage: transactionData.page, isLengthAware: true });
     return transactions;
 };
 
