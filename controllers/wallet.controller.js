@@ -7,7 +7,7 @@ const BadRequestError = require("../utils/errors/badrequest.error");
 const setWalletPin = catchAsync(async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(httpStatus.BAD_REQUEST).json({ errors: errors.array() });
+    return res.status(httpStatus.BAD_REQUEST).json({ success: false, errors: errors.array() });
   }
 
   const { pin } = req.body;
@@ -28,7 +28,7 @@ const setWalletPin = catchAsync(async (req, res) => {
 const fundWallet = catchAsync(async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(httpStatus.BAD_REQUEST).json({ errors: errors.array() });
+    return res.status(httpStatus.BAD_REQUEST).json({ success: false, errors: errors.array() });
   }
 
   const { amount, frontend_base_url } = req.body;
@@ -39,7 +39,7 @@ const fundWallet = catchAsync(async (req, res) => {
     frontend_base_url,
   };
 
-  const paymentLink = walletService.fundWallet(walletData);
+  const paymentLink = await walletService.fundWallet(walletData);
 
   return res.status(httpStatus.CREATED).send({
     success: true,
@@ -73,7 +73,7 @@ const verifyWalletFunding = catchAsync(async (req, res) => {
 const transferFund = catchAsync(async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(httpStatus.BAD_REQUEST).json({ errors: errors.array() });
+    return res.status(httpStatus.BAD_REQUEST).json({ success: false, errors: errors.array() });
   }
   const { amount, wallet_code_or_email, wallet_pin } = req.body;
 
@@ -95,7 +95,7 @@ const transferFund = catchAsync(async (req, res) => {
 const withdrawFund = catchAsync(async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(httpStatus.BAD_REQUEST).json({ errors: errors.array() });
+    return res.status(httpStatus.BAD_REQUEST).json({ success: false, errors: errors.array() });
   }
   const { amount, bank_code, account_number, wallet_pin } = req.body;
 

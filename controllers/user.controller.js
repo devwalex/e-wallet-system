@@ -10,7 +10,7 @@ const UnAuthorizedError = require("../utils/errors/unauthorized.error");
 const register = catchAsync(async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(httpStatus.BAD_REQUEST).json({ errors: errors.array() });
+    return res.status(httpStatus.BAD_REQUEST).json({ success: false, errors: errors.array() });
   }
   const user = await userService.createUser(req.body);
 
@@ -25,7 +25,7 @@ const register = catchAsync(async (req, res) => {
 const login = catchAsync(async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(httpStatus.BAD_REQUEST).json({ errors: errors.array() });
+    return res.status(httpStatus.BAD_REQUEST).json({ success: false, errors: errors.array() });
   }
   const { email, password } = req.body;
   const user = await userService.findUserByEmail(email);
