@@ -108,7 +108,7 @@ const verifyWalletFunding = async (walletData) => {
 };
 
 /**
- * Verify Wallet Funding
+ * Transfer Fund
  * @param {Object} walletData
  * @returns {Promise<Wallet>}
  */
@@ -231,12 +231,25 @@ const withdrawFund = async (walletData) => {
     // Deduct from user wallet
     await trx("wallets").where("user_id", user.id).decrement("balance", amountToDeduct);
 
+    // save the transaction for the amount withdrew
     await trx("transactions").insert({
       user_id: user.id,
       transaction_code: payment.id,
       transaction_reference: payment.reference,
-      amount: amountToDeduct,
+      amount: payment.amount,
       description: "Fund Withdrawal",
+      status: "successful",
+      payment_method: "bank transfer",
+      is_inflow: false,
+    });
+
+    // save the transaction for the fee of amount withdrew
+    await trx("transactions").insert({
+      user_id: user.id,
+      transaction_code: payment.id,
+      transaction_reference: payment.reference,
+      amount: payment.fee,
+      description: "Fund Withdrawal Fee",
       status: "successful",
       payment_method: "bank transfer",
       is_inflow: false,
