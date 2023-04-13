@@ -9,11 +9,12 @@ require('dotenv/config');
 module.exports = {
 
   development: {
-    client: 'mysql',
+    client: 'mysql2',
     connection: {
       database: process.env.DB_NAME,
       user:     process.env.DB_USER,
       password: process.env.DB_PASSWORD,
+      host: process.env.DB_HOST,
       port: process.env.DB_PORT
     },
     pool: {
@@ -26,11 +27,12 @@ module.exports = {
   },
 
   test: {
-    client: 'mysql',
+    client: 'mysql2',
     connection: {
       database: process.env.TEST_DB_NAME,
       user:     process.env.TEST_DB_USER,
       password: process.env.TEST_DB_PASSWORD,
+      host: process.env.DB_HOST,
       port: process.env.TEST_DB_PORT
     },
     pool: {
@@ -43,7 +45,7 @@ module.exports = {
   },
 
   // production: {
-  //   client: 'mysql',
+  //   client: 'mysql2',
   //   connection: {
   //     database: CLEARDB_DATABASE_URL.pathname.substring(1),
   //     user:  CLEARDB_DATABASE_URL.username,
@@ -60,7 +62,7 @@ module.exports = {
   // },
 
   production: {
-    client: 'mysql',
+    client: 'mysql2',
     connection: {
       database: process.env.DB_NAME,
       user:     process.env.DB_USER,

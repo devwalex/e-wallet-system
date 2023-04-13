@@ -1,0 +1,47 @@
+version: '3.8'
+services:
+  db:
+    image: mysql:8.0
+    restart: always
+    secrets:
+      - db-password
+    volumes:
+      - db-data:/var/lib/mysql
+    environment:
+      - MYSQL_DATABASE=e_wallet_system
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db-password
+    networks:
+      - app-network
+
+  api:
+    build: .
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      - PORT=3000
+      - HOST=localhost
+      - APP_URL=http://localhost:3000
+      - NODE_ENV=development
+      - DB_NAME=e_wallet_system
+      - DB_USER=root
+      - DB_PASSWORD_FILE=/run/secrets/db-password
+      - DB_HOST=db
+      - DB_PORT=3306
+    env_file:
+      - api.env
+    secrets:
+      - db-password
+    networks:
+      - app-network
+
+volumes:
+  db-data:
+secrets:
+  db-password:
+    file: password.txt
+networks:
+  app-network:
+    driver: bridge
