@@ -67,11 +67,13 @@ module.exports = {
   production: {
     client: 'mysql2',
     connection: {
-      database: process.env.DB_NAME,
-      user:     process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      host: process.env.DB_HOST,
-      port: process.env.DB_PORT
+      database: CLEARDB_DATABASE_URL.pathname.substring(1),
+      user:  CLEARDB_DATABASE_URL.username,
+      password: CLEARDB_DATABASE_URL.password,
+      host: CLEARDB_DATABASE_URL.host,
+      ssl: {
+        rejectUnauthorized: true,
+      }
     },
     pool: {
       min: 2,
