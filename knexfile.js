@@ -51,6 +51,9 @@ module.exports = {
       user:  CLEARDB_DATABASE_URL.username,
       password: CLEARDB_DATABASE_URL.password,
       host: CLEARDB_DATABASE_URL.host,
+      ssl: {
+        rejectUnauthorized: true,
+      }
     },
     pool: {
       min: 2,
