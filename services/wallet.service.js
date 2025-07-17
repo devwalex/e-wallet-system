@@ -1,7 +1,7 @@
 const db = require("../config/db");
 const randomstring = require("randomstring");
 const bcrypt = require("bcryptjs");
-const { makePayment, verifyPayment, withdrawPayment } = require("../helpers/payment.helpers");
+const { makePayment, verifyPayment, withdrawPayment, getBankList, retrieveBankAccountName } = require("../helpers/payment.helpers");
 require("dotenv/config");
 const banks = require("../helpers/json/banks.json");
 const NotFoundError = require("../utils/errors/notfound.error");
@@ -81,10 +81,7 @@ const verifyWalletFunding = async (walletData) => {
   const payment = await verifyPayment(walletData.transaction_id);
 
   if (payment.customer.email !== user.email) {
-    return Promise.reject({
-      success: false,
-      message: "Could not verify payment",
-    });
+    return Promise.reject(new Error("Could not verify payment"));
   }
   await db.transaction(async (trx) => {
     const transaction = await trx("transactions").where("user_id", user.id).where("transaction_code", payment.id).first();
@@ -272,11 +269,21 @@ const getWalletBalance = async (walletData) => {
 
 /**
  * Get Banks
- * @returns {Array} banks - array of banks
+ * @returns {Promise} banks - array of banks
  */
 
-const getBanks = () => {
-  return banks;
+const getBanks = async() => {
+  return getBankList();
+};
+
+/**
+ * Get Banks
+ * @returns {Promise} banks - array of banks
+ */
+
+const resolveBankAccount = async(walletData) => {
+  const {bank_code, account_number} = walletData
+  return retrieveBankAccountName(bank_code, account_number);
 };
 
 module.exports = {
@@ -288,4 +295,5 @@ module.exports = {
   withdrawFund,
   getWalletBalance,
   getBanks,
+  resolveBankAccount
 };

@@ -39,7 +39,7 @@ const fundWallet = catchAsync(async (req, res) => {
     frontend_base_url,
   };
 
-  const paymentLink = await walletService.fundWallet(walletData);
+  const paymentLink = walletService.fundWallet(walletData);
 
   return res.status(httpStatus.CREATED).send({
     success: true,
@@ -130,12 +130,33 @@ const getWalletBalance = catchAsync(async (req, res) => {
 });
 
 const getBanks = catchAsync(async (req, res) => {
-  const banks = walletService.getBanks();
+  const banks = await walletService.getBanks();
 
   return res.status(httpStatus.OK).send({
     success: true,
     message: "Returned banks successfully",
     result: banks,
+  });
+});
+
+const resolveBankAccount = catchAsync(async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(httpStatus.BAD_REQUEST).json({ success: false, errors: errors.array() });
+  }
+  const { bank_code, account_number } = req.body;
+
+  const walletData = {
+    bank_code,
+    account_number
+  };
+
+  const account = await walletService.resolveBankAccount(walletData);
+
+  return res.status(httpStatus.OK).send({
+    success: true,
+    message: "Account details fetched",
+    result: account
   });
 });
 
@@ -147,4 +168,5 @@ module.exports = {
   withdrawFund,
   getWalletBalance,
   getBanks,
+  resolveBankAccount
 };

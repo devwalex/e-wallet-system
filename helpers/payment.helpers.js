@@ -125,4 +125,54 @@ const withdrawPayment = async (amount, bank_code, account_number) => {
   }
 };
 
-module.exports = { makePayment, verifyPayment, withdrawPayment };
+/**
+ * Fetch Bank List from flutterwave
+ *
+ * @returns {Object}
+ */
+const getBankList = async () => {
+  try {
+    const banks = await axios({
+      method: "get",
+      url: `https://api.flutterwave.com/v3/banks/NG`,
+      headers: {
+        Authorization: `Bearer ${FlutterwaveKey}`,
+        Accept: "application/json",
+      },
+    });
+    return banks.data.data;
+  } catch (error) {
+    console.error("Get Banks Error>>", error.message);
+    throw new Error(error);
+  }
+};
+
+/**
+ * Resolve a bank account to get the account holder's details
+ *
+ * @param {String} bank_code
+ * @param {String} account_number
+ * @returns {Object}
+ */
+const retrieveBankAccountName = async (bank_code, account_number) => {
+  try {
+    const accountName = await axios({
+      method: "post",
+      url: `https://api.flutterwave.com/v3/accounts/resolve`,
+      data: { account_bank: bank_code, account_number },
+      headers: {
+        Authorization: `Bearer ${FlutterwaveKey}`,
+        Accept: "application/json",
+      },
+    });
+    return accountName.data.data;
+  } catch (error) {
+    console.error("Retrieve Bank Account Name Error>>", error.response?.data);
+    if (error.response?.data) {
+      throw new Error(error.response?.data?.message)
+    }
+    throw new Error(error);
+  }
+};
+
+module.exports = { makePayment, verifyPayment, withdrawPayment, getBankList, retrieveBankAccountName };

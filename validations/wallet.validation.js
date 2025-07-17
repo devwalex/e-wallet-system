@@ -17,9 +17,9 @@ const setWalletPin = [
     .withMessage("Confirm pin must contain only numbers")
     .custom((value, { req }) => {
       if (value !== req.body.pin) {
-        return Promise.reject("confirm pin must be the same as pin");
+        return Promise.reject(new Error("confirm pin must be the same as pin"));
       } else {
-        return true;
+        return Promise.resolve(true);
       }
     }),
 ];
@@ -29,7 +29,7 @@ const fundWallet = [
     .not()
     .isEmpty()
     .isCurrency()
-    .withMessage("amount must be a currency"),
+    .withMessage("Please enter a valid amount"),
   check("frontend_base_url")
     .isURL()
     .optional()
@@ -40,7 +40,7 @@ const transferFund = [
     .not()
     .isEmpty()
     .isCurrency()
-    .withMessage("amount must be a currency"),
+    .withMessage("Please enter a valid amount"),
     check("wallet_code_or_email", "Please provide either recipient wallet code or email")
     .not()
     .isEmpty(),
@@ -54,13 +54,11 @@ const withdrawFund = [
     .not()
     .isEmpty()
     .isCurrency()
-    .withMessage("amount must be a currency"),
-    check("bank_code", "Bank code is required")
+    .withMessage("Please enter a valid amount"),
+    check("bank_code", "Please select a bank")
     .not()
-    .isEmpty()
-    .isLength({ min: 3, max: 3 })
-    .withMessage("Bank code contain only 3 numbers"),
-    check("account_number", "Bank code is required")
+    .isEmpty(),
+    check("account_number", "Account number is required")
     .not()
     .isEmpty()
     .isLength({ min: 10, max: 10 })
@@ -70,9 +68,21 @@ const withdrawFund = [
     .isEmpty()
 ];
 
+const resolveBankAccount = [
+    check("bank_code", "Please select a bank")
+    .not()
+    .isEmpty(),
+    check("account_number", "Account number is required")
+    .not()
+    .isEmpty()
+    .isLength({ min: 10, max: 10 })
+    .withMessage("Account number contain only 10 numbers"),
+];
+
 module.exports = {
   setWalletPin,
   fundWallet,
   transferFund,
-  withdrawFund
+  withdrawFund,
+  resolveBankAccount
 };
