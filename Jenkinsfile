@@ -8,6 +8,9 @@ pipeline {
             }
         }
         stage('Test') {
+            when {
+                BRANCH_NAME == "test"
+            }
             steps {
                 echo 'Testing...'
             }
