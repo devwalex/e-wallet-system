@@ -15,7 +15,7 @@ pipeline {
         }
       }
       steps {
-        echo 'Testing...'
+        echo 'Testing Webhook...'
       }
     }
 
