@@ -27,6 +27,12 @@ pipeline {
       }
       steps {
         echo 'Deploying...'
+        script {
+          def dockerCmd = 'docker run -p 3000:3000 -d devwalex/e-wallet-system:latest'
+          sshagent(['ec2-server-key']) {
+            sh "ssh -o StrictHostKeyChecking=no ec2-user@54.227.15.156 ${dockerCmd}" 
+          }
+        }
       }
     }
 
