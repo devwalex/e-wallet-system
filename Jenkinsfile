@@ -20,11 +20,11 @@ pipeline {
     }
 
     stage('Deploy') {
-      when {
-        expression {
-          BRANCH_NAME == "deploy"
-        }
-      }
+      // when {
+      //   expression {
+      //     BRANCH_NAME == "deploy"
+      //   }
+      // }
       steps {
         echo 'Deploying...'
         script {
