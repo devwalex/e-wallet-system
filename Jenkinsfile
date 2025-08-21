@@ -34,6 +34,7 @@ pipeline {
       steps {
         echo 'Checking out code...'
         checkout scm
+        sh 'git fetch --tags'
       }
     }
 
