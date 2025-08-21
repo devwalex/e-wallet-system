@@ -1,7 +1,7 @@
 pipeline {
   agent {
     docker {
-      image 'docker:20.10.7-dind'
+      image 'node:18'
       args '-v /var/run/docker.sock:/var/run/docker.sock'
     }
   }
