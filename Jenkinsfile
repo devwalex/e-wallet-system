@@ -29,7 +29,7 @@ pipeline {
       steps {
         echo 'Checking out code...'
         checkout scm
-        // sh 'git fetch --tags'
+        sh 'git fetch --tags'
       }
     }
 
@@ -69,7 +69,7 @@ pipeline {
                 echo "Running integration tests..."
                 docker compose -f docker-compose.yml up -d
                 sleep 10  # wait for services to start
-                npm run test || { docker compose -f docker-compose.yml down; exit 1; }
+                docker compose exec -T api npm run test || { docker compose -f docker-compose.yml down; exit 1; }
                 docker compose -f docker-compose.yml down
             """
         }
