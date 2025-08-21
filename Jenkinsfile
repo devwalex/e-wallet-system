@@ -19,7 +19,7 @@ pipeline {
 
       TEST_DB_USER     = credentials('db-user')
       TEST_DB_PASSWORD = credentials('db-password')
-      TEST_DB_NAME     = 'e_wallet_system_test'
+      TEST_DB_NAME     = 'e_wallet_system'
       TEST_DB_HOST     = 'db'
       TEST_DB_PORT     = '3306'
   }
