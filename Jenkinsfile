@@ -36,7 +36,12 @@ pipeline {
       steps {
           script {
               // Get the latest Git tag (e.g., 1.2.0)
-              VERSION = sh(script: "git describe --tags --abbrev=0", returnStdout: true).trim()
+                try {
+                  VERSION = sh(script: "git describe --tags --abbrev=0", returnStdout: true).trim()
+                } catch (err) {
+                  echo "⚠️ No git tags found, falling back to 0.0.1"
+                  VERSION = "0.0.1"
+                }
               
               // Optional: Append Jenkins build number for traceability
               BUILD_VERSION = "${VERSION}-${env.BUILD_NUMBER}"
