@@ -9,10 +9,11 @@ services:
       - MYSQL_USER=${DB_USER}
       - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
     healthcheck:
-      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
-      interval: 30s
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${DB_PASSWORD}"]
+      interval: 10s
       timeout: 10s
-      retries: 5
+      retries: 10
+      start_period: 30s
     networks:
       - app-network
 
