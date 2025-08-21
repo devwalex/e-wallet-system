@@ -1,10 +1,5 @@
 pipeline {
-  agent {
-    docker {
-      image 'node:18'
-      args '-v /var/run/docker.sock:/var/run/docker.sock'
-    }
-  }
+  agent any
   
   environment {
       DOCKER_IMAGE = "devwalex/e-wallet-system"
@@ -34,7 +29,7 @@ pipeline {
       steps {
         echo 'Checking out code...'
         checkout scm
-        sh 'git fetch --tags'
+        // sh 'git fetch --tags'
       }
     }
 
