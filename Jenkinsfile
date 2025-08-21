@@ -25,10 +25,10 @@ pipeline {
   }
   stages {
 
-    stage('Checkout') {
+    stage('Fetch Tags') {
       steps {
-        echo 'Checking out code...'
-        checkout scm
+        echo 'Fetching tags...'
+        // checkout scm
         sh 'git fetch --tags'
       }
     }
