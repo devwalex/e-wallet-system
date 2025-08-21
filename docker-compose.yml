@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   db:
     image: mysql:8.0
@@ -23,21 +22,22 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       - NODE_ENV=${NODE_ENV}
       - APP_URL=${APP_URL}
       - PORT=${PORT}
       - HOST=${HOST}
 
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT}
+      - DB_HOST=db
+      - DB_PORT=3306
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
 
-      - TEST_DB_HOST=${TEST_DB_HOST}
-      - TEST_DB_PORT=${TEST_DB_PORT}
+      - TEST_DB_HOST=db
+      - TEST_DB_PORT=3306
       - TEST_DB_NAME=${TEST_DB_NAME}
       - TEST_DB_USER=${TEST_DB_USER}
       - TEST_DB_PASSWORD=${TEST_DB_PASSWORD}
