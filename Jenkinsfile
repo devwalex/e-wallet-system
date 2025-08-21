@@ -1,40 +1,103 @@
 pipeline {
   agent any
+  
+  environment {
+      DOCKER_IMAGE = "devwalex/e-wallet-system"
+      NODE_ENV   = 'production'
+      APP_URL    = 'http://0.0.0.0:3000'
+      PORT       = '3000'
+      HOST       = '0.0.0.0'
+
+      DB_USER     = credentials('db-user')
+      DB_PASSWORD = credentials('db-password')
+      DB_NAME     = 'e_wallet_system'
+      DB_HOST     = 'db'
+      DB_PORT     = '3306'
+
+      APP_SECRET_KEY = credentials('app-secret-key')
+      FLUTTERWAVE_KEY = credentials('flutterwave-key')
+
+      TEST_DB_USER     = credentials('db-user')
+      TEST_DB_PASSWORD = credentials('db-password')
+      TEST_DB_NAME     = 'e_wallet_system_test'
+      TEST_DB_HOST     = 'db'
+      TEST_DB_PORT     = '3306'
+  }
   stages {
-    stage('Build') {
+
+    stage('Checkout') {
+      steps {
+        echo 'Checking out code...'
+        checkout scm
+      }
+    }
+
+    stage('Get Version') {
+      steps {
+          script {
+              // Get the latest Git tag (e.g., 1.2.0)
+              VERSION = sh(script: "git describe --tags --abbrev=0", returnStdout: true).trim()
+              
+              // Optional: Append Jenkins build number for traceability
+              BUILD_VERSION = "${VERSION}-${env.BUILD_NUMBER}"
+
+              echo "Release version: ${VERSION}"
+              echo "Build version: ${BUILD_VERSION}"
+          }
+      }
+    }
+
+    stage('Build Docker Image') {
       steps {
         echo 'Building...'
-        sh 'echo "Executing pipeline for branch $BRANCH_NAME" '
+        sh """
+            docker build -t ${DOCKER_IMAGE}:${VERSION} .
+            docker build -t ${DOCKER_IMAGE}:latest .
+        """
       }
     }
 
     stage('Test') {
-      when {
-        expression {
-          BRANCH_NAME == "test"
+        steps {
+             sh """
+                echo "Running integration tests..."
+                docker compose -f docker-compose.yml up -d
+                sleep 10  # wait for services to start
+                npm run test || { docker compose -f docker-compose.yml down; exit 1; }
+                docker compose -f docker-compose.yml down
+            """
         }
-      }
-      steps {
-        echo 'Testing Webhook...'
-      }
     }
 
-    stage('Deploy') {
-      // when {
-      //   expression {
-      //     BRANCH_NAME == "deploy"
-      //   }
-      // }
-      steps {
-        echo 'Deploying...'
-        script {
-          def dockerCmd = 'docker run -p 3000:3000 -d devwalex/e-wallet-system:latest'
-          sshagent(['ec2-server-key']) {
-            sh "ssh -o StrictHostKeyChecking=no ec2-user@54.227.15.156 ${dockerCmd}" 
-          }
-        }
-      }
-    }
+
+
+    // stage('Test') {
+    //   when {
+    //     expression {
+    //       BRANCH_NAME == "test"
+    //     }
+    //   }
+    //   steps {
+    //     echo 'Testing Webhook...'
+    //   }
+    // }
+
+    // stage('Deploy') {
+    //   // when {
+    //   //   expression {
+    //   //     BRANCH_NAME == "deploy"
+    //   //   }
+    //   // }
+    //   steps {
+    //     echo 'Deploying...'
+    //     script {
+    //       def dockerCmd = 'docker run -p 3000:3000 -d devwalex/e-wallet-system:latest'
+    //       sshagent(['ec2-server-key']) {
+    //         sh "ssh -o StrictHostKeyChecking=no ec2-user@54.227.15.156 ${dockerCmd}" 
+    //       }
+    //     }
+    //   }
+    // }
 
   }
 }
