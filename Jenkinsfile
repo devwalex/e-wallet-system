@@ -81,7 +81,7 @@ pipeline {
                                             usernameVariable: 'DOCKER_USER',
                                             passwordVariable: 'DOCKER_PASS')]) {
               sh """
-                echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
                 docker push ${DOCKER_IMAGE}:${VERSION}
                 docker push ${DOCKER_IMAGE}:latest
               """
@@ -92,25 +92,21 @@ pipeline {
   stage('Deploy to EC2') {
     steps {
         script {
-          // writeFile file: '.env', text: """
-          sh """
-            cat > .env <<EOL
+          writeFile file: '.env', text: """
+            DOCKER_IMAGE=$DOCKER_IMAGE:$VERSION
+            NODE_ENV=$NODE_ENV
+            APP_URL=$APP_URL
+            PORT=$PORT
+            HOST=$HOST
 
-            DOCKER_IMAGE=${DOCKER_IMAGE}:${VERSION}
-            NODE_ENV=${NODE_ENV}
-            APP_URL=${APP_URL}
-            PORT=${PORT}
-            HOST=${HOST}
+            DB_NAME=$DB_NAME
+            DB_USER=$DB_USER
+            DB_PASSWORD=$DB_PASSWORD
+            DB_HOST=$DB_HOST
+            DB_PORT=$DB_PORT
 
-            DB_NAME=${DB_NAME}
-            DB_USER=${DB_USER}
-            DB_PASSWORD=${DB_PASSWORD}
-            DB_HOST=${DB_HOST}
-            DB_PORT=${DB_PORT}
-
-            APP_SECRET_KEY=${APP_SECRET_KEY}
-            FLUTTERWAVE_KEY=${FLUTTERWAVE_KEY}
-            EOL
+            APP_SECRET_KEY=$APP_SECRET_KEY
+            FLUTTERWAVE_KEY=$FLUTTERWAVE_KEY
           """
             sshagent(['ec2-server-key']) {
                 sh """
