@@ -82,8 +82,8 @@ pipeline {
                                             passwordVariable: 'DOCKER_PASS')]) {
               sh '''
                 echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                docker push ${DOCKER_IMAGE}:${VERSION}
-                docker push ${DOCKER_IMAGE}:latest
+                docker push $DOCKER_IMAGE:$VERSION
+                docker push $DOCKER_IMAGE:latest
               '''
           }
       }
@@ -119,7 +119,7 @@ pipeline {
                   scp -o StrictHostKeyChecking=no docker-compose.yml .env ec2-user@54.227.15.156:/home/ec2-user/
                   ssh -o StrictHostKeyChecking=no ec2-user@54.227.15.156 '
                     docker pull ${DOCKER_IMAGE}:latest &&
-                    docker compose -f docker-compose.yml up -d
+                    docker compose -f docker-compose.yml up -d --force-recreate --remove-orphans
                   '
                 """
             }
