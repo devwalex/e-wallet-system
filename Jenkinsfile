@@ -64,15 +64,29 @@ pipeline {
     }
 
     stage('Test') {
-        steps {
-             sh """
-                echo "Running integration tests..."
-                docker compose -f docker-compose.yml up -d
-                sleep 10  # wait for services to start
-                docker compose exec -T api npm run test || { docker compose -f docker-compose.yml down; exit 1; }
-                docker compose -f docker-compose.yml down
-            """
-        }
+      steps {
+            sh """
+              echo "Running integration tests..."
+              docker compose -f docker-compose.yml up -d
+              sleep 10  # wait for services to start
+              docker compose exec -T api npm run test || { docker compose -f docker-compose.yml down; exit 1; }
+              docker compose -f docker-compose.yml down
+          """
+      }
+    }
+
+    stage('Push Docker Image') {
+      steps {
+          withCredentials([usernamePassword(credentialsId: 'docker-hub-creds',
+                                            usernameVariable: 'DOCKER_USER',
+                                            passwordVariable: 'DOCKER_PASS')]) {
+              sh """
+                echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                docker push ${DOCKER_IMAGE}:${VERSION}
+                docker push ${DOCKER_IMAGE}:latest
+              """
+          }
+      }
     }
 
 
