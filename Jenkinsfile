@@ -89,46 +89,46 @@ pipeline {
       }
     }
 
-  stage('Deploy to EC2') {
-    steps {
-        script {
-          writeFile file: '.env', text: """
-          DOCKER_IMAGE=${DOCKER_IMAGE}:${env.VERSION}
-          NODE_ENV=${NODE_ENV}
-          APP_URL=${APP_URL}
-          PORT=${PORT}
-          HOST=${HOST}
+    stage('Deploy to EC2') {
+      steps {
+          script {
+            sh '''
+              cat > .env <<EOL
 
-          DB_NAME=${DB_NAME}
-          DB_USER=${DB_USER}
-          DB_PASSWORD=${DB_PASSWORD}
-          DB_HOST=${DB_HOST}
-          DB_PORT=${DB_PORT}
+              DOCKER_IMAGE=$DOCKER_IMAGE:$VERSION
+              NODE_ENV=$NODE_ENV
+              APP_URL=$APP_URL
+              PORT=$PORT
+              HOST=$HOST
 
-          TEST_DB_NAME=${TEST_DB_NAME}
-          TEST_DB_USER=${TEST_DB_USER}
-          TEST_DB_PASSWORD=${TEST_DB_PASSWORD}
-          TEST_DB_HOST=${TEST_DB_HOST}
-          TEST_DB_PORT=${TEST_DB_PORT}
+              DB_NAME=$DB_NAME
+              DB_USER=$DB_USER
+              DB_PASSWORD=$DB_PASSWORD
+              DB_HOST=$DB_HOST
+              DB_PORT=$DB_PORT
 
-          APP_SECRET_KEY=${APP_SECRET_KEY}
-          FLUTTERWAVE_KEY=${FLUTTERWAVE_KEY}
-          """
-            sshagent(['ec2-server-key']) {
-                sh """
-                  scp -o StrictHostKeyChecking=no docker-compose.yml .env ec2-user@54.227.15.156:/home/ec2-user/
-                  ssh -o StrictHostKeyChecking=no ec2-user@54.227.15.156 '
-                    docker pull ${DOCKER_IMAGE}:latest &&
-                    docker compose -f docker-compose.yml up -d --force-recreate --remove-orphans
-                  '
-                """
-            }
-        }
+              TEST_DB_NAME=$TEST_DB_NAME
+              TEST_DB_USER=$TEST_DB_USER
+              TEST_DB_PASSWORD=$TEST_DB_PASSWORD
+              TEST_DB_HOST=$TEST_DB_HOST
+              TEST_DB_PORT=$TEST_DB_PORT
+
+              APP_SECRET_KEY=$APP_SECRET_KEY
+              FLUTTERWAVE_KEY=$FLUTTERWAVE_KEY
+              
+              EOL
+            '''
+              sshagent(['ec2-server-key']) {
+                  sh """
+                    scp -o StrictHostKeyChecking=no docker-compose.yml .env ec2-user@54.227.15.156:/home/ec2-user/
+                    ssh -o StrictHostKeyChecking=no ec2-user@54.227.15.156 '
+                      docker pull ${DOCKER_IMAGE}:latest &&
+                      docker compose -f docker-compose.yml up -d --force-recreate --remove-orphans
+                    '
+                  """
+              }
+          }
+      }
     }
-  }
-
-
-
-
   }
 }
