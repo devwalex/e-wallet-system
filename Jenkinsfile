@@ -45,7 +45,7 @@ pipeline {
                 }
               
               // Optional: Append Jenkins build number for traceability
-              BUILD_VERSION = "${VERSION}-${env.BUILD_NUMBER}"
+              def BUILD_VERSION = "${VERSION}-${env.BUILD_NUMBER}"
 
               echo "Release version: ${VERSION}"
               echo "Build version: ${BUILD_VERSION}"
@@ -81,13 +81,28 @@ pipeline {
                                             usernameVariable: 'DOCKER_USER',
                                             passwordVariable: 'DOCKER_PASS')]) {
               sh """
-                echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
                 docker push ${DOCKER_IMAGE}:${VERSION}
                 docker push ${DOCKER_IMAGE}:latest
               """
           }
       }
     }
+
+  stage('Deploy to EC2') {
+    steps {
+        script {
+            sshagent(['ec2-server-key']) {
+                sh """
+                  ssh -o StrictHostKeyChecking=no ec2-user@54.227.15.156 '
+                    docker pull ${DOCKER_IMAGE}:latest &&
+                    docker compose -f docker-compose.yml up -d
+                  '
+                """
+            }
+        }
+    }
+  }
 
 
 
