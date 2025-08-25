@@ -92,7 +92,10 @@ pipeline {
   stage('Deploy to EC2') {
     steps {
         script {
-          writeFile file: '.env', text: """
+          // writeFile file: '.env', text: """
+          sh """
+            cat > .env <<EOL
+
             DOCKER_IMAGE=${DOCKER_IMAGE}:${VERSION}
             NODE_ENV=${NODE_ENV}
             APP_URL=${APP_URL}
@@ -105,14 +108,9 @@ pipeline {
             DB_HOST=${DB_HOST}
             DB_PORT=${DB_PORT}
 
-            TEST_DB_NAME=${TEST_DB_NAME}
-            TEST_DB_USER=${TEST_DB_USER}
-            TEST_DB_PASSWORD=${TEST_DB_PASSWORD}
-            TEST_DB_HOST=${TEST_DB_HOST}
-            TEST_DB_PORT=${TEST_DB_PORT}
-
             APP_SECRET_KEY=${APP_SECRET_KEY}
             FLUTTERWAVE_KEY=${FLUTTERWAVE_KEY}
+            EOL
           """
             sshagent(['ec2-server-key']) {
                 sh """
