@@ -80,11 +80,11 @@ pipeline {
           withCredentials([usernamePassword(credentialsId: 'docker-hub-creds',
                                             usernameVariable: 'DOCKER_USER',
                                             passwordVariable: 'DOCKER_PASS')]) {
-              sh """
+              sh '''
                 echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
                 docker push ${DOCKER_IMAGE}:${VERSION}
                 docker push ${DOCKER_IMAGE}:latest
-              """
+              '''
           }
       }
     }
@@ -92,7 +92,7 @@ pipeline {
   stage('Deploy to EC2') {
     steps {
         script {
-          writeFile file: '.env', text: """
+          writeFile file: '.env', text: '''
             DOCKER_IMAGE=$DOCKER_IMAGE:$VERSION
             NODE_ENV=$NODE_ENV
             APP_URL=$APP_URL
@@ -105,9 +105,15 @@ pipeline {
             DB_HOST=$DB_HOST
             DB_PORT=$DB_PORT
 
+            TEST_DB_NAME=$TEST_DB_NAME
+            TEST_DB_USER=$TEST_DB_USER
+            TEST_DB_PASSWORD=$TEST_DB_PASSWORD
+            TEST_DB_HOST=$TEST_DB_HOST
+            TEST_DB_PORT=$TEST_DB_PORT
+
             APP_SECRET_KEY=$APP_SECRET_KEY
             FLUTTERWAVE_KEY=$FLUTTERWAVE_KEY
-          """
+          '''
             sshagent(['ec2-server-key']) {
                 sh """
                   scp -o StrictHostKeyChecking=no docker-compose.yml .env ec2-user@54.227.15.156:/home/ec2-user/
@@ -123,33 +129,6 @@ pipeline {
 
 
 
-    // stage('Test') {
-    //   when {
-    //     expression {
-    //       BRANCH_NAME == "test"
-    //     }
-    //   }
-    //   steps {
-    //     echo 'Testing Webhook...'
-    //   }
-    // }
-
-    // stage('Deploy') {
-    //   // when {
-    //   //   expression {
-    //   //     BRANCH_NAME == "deploy"
-    //   //   }
-    //   // }
-    //   steps {
-    //     echo 'Deploying...'
-    //     script {
-    //       def dockerCmd = 'docker run -p 3000:3000 -d devwalex/e-wallet-system:latest'
-    //       sshagent(['ec2-server-key']) {
-    //         sh "ssh -o StrictHostKeyChecking=no ec2-user@54.227.15.156 ${dockerCmd}" 
-    //       }
-    //     }
-    //   }
-    // }
 
   }
 }
