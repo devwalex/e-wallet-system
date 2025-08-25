@@ -94,6 +94,7 @@ pipeline {
         script {
             sshagent(['ec2-server-key']) {
                 sh """
+                  scp -o StrictHostKeyChecking=no docker-compose.yml ec2-user@54.227.15.156:/home/ec2-user/
                   ssh -o StrictHostKeyChecking=no ec2-user@54.227.15.156 '
                     docker pull ${DOCKER_IMAGE}:latest &&
                     docker compose -f docker-compose.yml up -d

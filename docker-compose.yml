@@ -17,7 +17,7 @@ services:
       - app-network
 
   api:
-    build: .
+    image: devwalex/e-wallet-system:latest
     restart: always
     ports:
       - "3000:3000"
