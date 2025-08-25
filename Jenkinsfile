@@ -38,16 +38,16 @@ pipeline {
           script {
               // Get the latest Git tag (e.g., 1.2.0)
                 try {
-                  VERSION = sh(script: "git describe --tags --abbrev=0", returnStdout: true).trim()
+                  env.VERSION = sh(script: "git describe --tags --abbrev=0", returnStdout: true).trim()
                 } catch (err) {
-                  echo "⚠️ No git tags found, falling back to 0.0.1"
-                  VERSION = "0.0.1"
+                  echo "⚠️ No git tags found, falling back to 1.0.0"
+                  env.VERSION = "1.0.0"
                 }
               
               // Optional: Append Jenkins build number for traceability
-              def BUILD_VERSION = "${VERSION}-${env.BUILD_NUMBER}"
+              def BUILD_VERSION = "${env.VERSION}-${env.BUILD_NUMBER}"
 
-              echo "Release version: ${VERSION}"
+              echo "Release version: ${env.VERSION}"
               echo "Build version: ${BUILD_VERSION}"
           }
       }
@@ -57,7 +57,7 @@ pipeline {
       steps {
         echo 'Building...'
         sh """
-            docker build -t ${DOCKER_IMAGE}:${VERSION} .
+            docker build -t ${DOCKER_IMAGE}:${env.VERSION} .
             docker build -t ${DOCKER_IMAGE}:latest .
         """
       }
@@ -92,28 +92,28 @@ pipeline {
   stage('Deploy to EC2') {
     steps {
         script {
-          writeFile file: '.env', text: '''
-            DOCKER_IMAGE=$DOCKER_IMAGE:$VERSION
-            NODE_ENV=$NODE_ENV
-            APP_URL=$APP_URL
-            PORT=$PORT
-            HOST=$HOST
+          writeFile file: '.env', text: """
+          DOCKER_IMAGE=${DOCKER_IMAGE}:${env.VERSION}
+          NODE_ENV=${NODE_ENV}
+          APP_URL=${APP_URL}
+          PORT=${PORT}
+          HOST=${HOST}
 
-            DB_NAME=$DB_NAME
-            DB_USER=$DB_USER
-            DB_PASSWORD=$DB_PASSWORD
-            DB_HOST=$DB_HOST
-            DB_PORT=$DB_PORT
+          DB_NAME=${DB_NAME}
+          DB_USER=${DB_USER}
+          DB_PASSWORD=${DB_PASSWORD}
+          DB_HOST=${DB_HOST}
+          DB_PORT=${DB_PORT}
 
-            TEST_DB_NAME=$TEST_DB_NAME
-            TEST_DB_USER=$TEST_DB_USER
-            TEST_DB_PASSWORD=$TEST_DB_PASSWORD
-            TEST_DB_HOST=$TEST_DB_HOST
-            TEST_DB_PORT=$TEST_DB_PORT
+          TEST_DB_NAME=${TEST_DB_NAME}
+          TEST_DB_USER=${TEST_DB_USER}
+          TEST_DB_PASSWORD=${TEST_DB_PASSWORD}
+          TEST_DB_HOST=${TEST_DB_HOST}
+          TEST_DB_PORT=${TEST_DB_PORT}
 
-            APP_SECRET_KEY=$APP_SECRET_KEY
-            FLUTTERWAVE_KEY=$FLUTTERWAVE_KEY
-          '''
+          APP_SECRET_KEY=${APP_SECRET_KEY}
+          FLUTTERWAVE_KEY=${FLUTTERWAVE_KEY}
+          """
             sshagent(['ec2-server-key']) {
                 sh """
                   scp -o StrictHostKeyChecking=no docker-compose.yml .env ec2-user@54.227.15.156:/home/ec2-user/
