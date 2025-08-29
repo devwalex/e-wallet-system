@@ -1,22 +1,133 @@
 pipeline {
-    agent any
+  agent any
+  
+  environment {
+      DOCKER_IMAGE = "devwalex/e-wallet-system"
+      NODE_ENV   = 'production'
+      APP_URL    = 'http://0.0.0.0:3000'
+      PORT       = '3000'
+      HOST       = '0.0.0.0'
 
-    stages {
-        stage('Build') {
-            steps {
-                echo 'Building...'
-            }
-        }
-        stage('Test') {
-            steps {
-                echo 'Testing...'
-            }
-        }
-        stage('Deploy') {
-            steps {
-                echo 'Deploying...'
-            }
-        }
+      DB_USER     = credentials('db-user')
+      DB_PASSWORD = credentials('db-password')
+      DB_NAME     = 'e_wallet_system'
+      DB_HOST     = 'db'
+      DB_PORT     = '3306'
+
+      APP_SECRET_KEY = credentials('app-secret-key')
+      FLUTTERWAVE_KEY = credentials('flutterwave-key')
+
+      TEST_DB_USER     = credentials('db-user')
+      TEST_DB_PASSWORD = credentials('db-password')
+      TEST_DB_NAME     = 'e_wallet_system'
+      TEST_DB_HOST     = 'db'
+      TEST_DB_PORT     = '3306'
+  }
+  stages {
+
+    stage('Fetch Tags') {
+      steps {
+        echo 'Fetching tags...'
+        // checkout scm
+        sh 'git fetch --tags'
+      }
     }
 
+    stage('Get Version') {
+      steps {
+          script {
+              // Get the latest Git tag (e.g., 1.2.0)
+                try {
+                  env.VERSION = sh(script: "git describe --tags --abbrev=0", returnStdout: true).trim()
+                } catch (err) {
+                  echo "No git tags found, falling back to 1.0.0"
+                  env.VERSION = "1.0.0"
+                }
+              
+              def BUILD_VERSION = "${env.VERSION}-${env.BUILD_NUMBER}"
+
+              echo "Release version: ${env.VERSION}"
+              echo "Build version: ${BUILD_VERSION}"
+          }
+      }
+    }
+
+    stage('Build Docker Image') {
+      steps {
+        echo 'Building...'
+        sh """
+            docker build -t ${DOCKER_IMAGE}:${env.VERSION} .
+            docker build -t ${DOCKER_IMAGE}:latest .
+        """
+      }
+    }
+
+    stage('Test') {
+      steps {
+            sh """
+              echo "Running integration tests..."
+              docker compose -f docker-compose.yml up -d
+              sleep 10  # wait for services to start
+              docker compose exec -T api npm run test || { docker compose -f docker-compose.yml down; exit 1; }
+              docker compose -f docker-compose.yml down
+          """
+      }
+    }
+
+    stage('Push Docker Image') {
+      steps {
+          withCredentials([usernamePassword(credentialsId: 'docker-hub-creds',
+                                            usernameVariable: 'DOCKER_USER',
+                                            passwordVariable: 'DOCKER_PASS')]) {
+              sh '''
+                echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                docker push $DOCKER_IMAGE:$VERSION
+                docker push $DOCKER_IMAGE:latest
+              '''
+          }
+      }
+    }
+
+    stage('Deploy to EC2') {
+      steps {
+          script {
+            sh '''
+              cat > .env <<EOL
+
+              DOCKER_IMAGE=$DOCKER_IMAGE:$VERSION
+              NODE_ENV=$NODE_ENV
+              APP_URL=$APP_URL
+              PORT=$PORT
+              HOST=$HOST
+
+              DB_NAME=$DB_NAME
+              DB_USER=$DB_USER
+              DB_PASSWORD=$DB_PASSWORD
+              DB_HOST=$DB_HOST
+              DB_PORT=$DB_PORT
+
+              TEST_DB_NAME=$TEST_DB_NAME
+              TEST_DB_USER=$TEST_DB_USER
+              TEST_DB_PASSWORD=$TEST_DB_PASSWORD
+              TEST_DB_HOST=$TEST_DB_HOST
+              TEST_DB_PORT=$TEST_DB_PORT
+
+              APP_SECRET_KEY=$APP_SECRET_KEY
+              FLUTTERWAVE_KEY=$FLUTTERWAVE_KEY
+              
+              EOL
+            '''
+              sshagent(['ec2-server-key']) {
+                  sh """
+                    scp -o StrictHostKeyChecking=no docker-compose.yml .env ec2-user@54.227.15.156:/home/ec2-user/
+                    ssh -o StrictHostKeyChecking=no ec2-user@54.227.15.156 '
+                      docker pull ${DOCKER_IMAGE}:latest &&
+                      docker compose -f docker-compose.yml up -d
+                    '
+                  """
+              }
+          }
+      }
+    }
+  }
 }
