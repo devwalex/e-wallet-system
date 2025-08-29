@@ -40,11 +40,10 @@ pipeline {
                 try {
                   env.VERSION = sh(script: "git describe --tags --abbrev=0", returnStdout: true).trim()
                 } catch (err) {
-                  echo "⚠️ No git tags found, falling back to 1.0.0"
+                  echo "No git tags found, falling back to 1.0.0"
                   env.VERSION = "1.0.0"
                 }
               
-              // Optional: Append Jenkins build number for traceability
               def BUILD_VERSION = "${env.VERSION}-${env.BUILD_NUMBER}"
 
               echo "Release version: ${env.VERSION}"
@@ -123,7 +122,7 @@ pipeline {
                     scp -o StrictHostKeyChecking=no docker-compose.yml .env ec2-user@54.227.15.156:/home/ec2-user/
                     ssh -o StrictHostKeyChecking=no ec2-user@54.227.15.156 '
                       docker pull ${DOCKER_IMAGE}:latest &&
-                      docker compose -f docker-compose.yml up -d --force-recreate --remove-orphans
+                      docker compose -f docker-compose.yml up -d
                     '
                   """
               }
