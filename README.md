@@ -1,18 +1,20 @@
 # e-wallet-system
-This system allow users to fund their account, transfer funds and withdraw from their account.
+This is a backend API for managing a digital wallet system.  
+It allows users to **fund their account, transfer funds, withdraw, and view transaction history**.  
 
 # Features
 - Basic Authentication (Register & Login)
-- Get Profile
+- User Profile Management
 - Set Wallet Pin
 - Fund Wallet
 - Verify Wallet Funding
 - Fund Transfer
-- Withdraw Fund
-- Get Transactions
+- Withdraw Funds
+- Transaction History
 
 # API Documentation
-https://documenter.getpostman.com/view/5916628/UVkqrEs8
+The full API documentation is available here:  
+👉 [Postman Docs](https://documenter.getpostman.com/view/5916628/UVkqrEs8)
 
 # How to install
 
@@ -63,7 +65,11 @@ npm start
 ```
 You will know server is running by checking the output of the command `npm start`
 
-
+## Running with Docker
+```
+docker compose -f docker-compose.yml -f docker-compose.local.yml up -d
+```
+This will start the API inside a container.
 
 # Running Tests
 
